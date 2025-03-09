@@ -91,7 +91,21 @@ impl SysInfo {
         self.free_ram = sys.free_memory() as f64;
         self.used_swap = sys.used_swap() as f64;
 
-        self.cpu_usage = sys.cpus()[0].cpu_usage() as f64;
+        // TODO: Collect all cpus information and usage
+
+        // Calculate the average CPU usage across all CPUs
+        let cpu_count = sys.cpus().len();
+        let total_cpu_usage: f64 = sys.cpus().iter()
+            .map(|cpu| cpu.cpu_usage() as f64)
+            .sum();
+        
+        // Set the average CPU usage as a percentage
+        self.cpu_usage = if cpu_count > 0 {
+            total_cpu_usage / cpu_count as f64
+        } else {
+            0.0
+        };
+        
         self.ram_usage = sys.used_memory() as f64;
 
         for disk in disks.list() {
