@@ -86,7 +86,6 @@ impl Storage {
     }
 
     pub fn insert_sysinfo(&self, conn: &Connection, sysinfo: &SysInfo) -> Result<i64> {
-        // Use timestamp directly as it's already a String
         conn.execute(
             "INSERT INTO sysinfo (timestamp, cpu_usage, ram_usage, total_ram, free_ram, used_swap)
          VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
@@ -103,7 +102,6 @@ impl Storage {
     }
 
     pub fn get_latest_sysinfo(&self, conn: &Connection) -> Result<Option<SysInfo>> {
-        // Recupera l'ultimo record dalla tabella sysinfo
         let mut stmt = conn.prepare(
             "SELECT s.id, s.timestamp, s.cpu_usage, s.ram_usage, s.total_ram, s.free_ram, s.used_swap,
                     d.filesystem, d.size, d.used, d.available, d.used_percentage, d.mounted_path
@@ -116,7 +114,6 @@ impl Storage {
         let mut sysinfo: Option<SysInfo> = None;
 
         while let Some(row) = rows.next()? {
-            // Se sysinfo non è ancora stato creato, lo creiamo usando i dati della prima riga
             if sysinfo.is_none() {
                 sysinfo = Some(SysInfo {
                     id: row.get("id")?,
@@ -129,7 +126,6 @@ impl Storage {
                     disks: Vec::new(),
                 });
             }
-            // Recuperiamo i dati relativi al disco: se filesystem è NULL, significa che non esiste un record in diskinfo.
             let filesystem: Option<String> = row.get("filesystem")?;
             if let Some(fs) = filesystem {
                 let disk = DiskInfo {
