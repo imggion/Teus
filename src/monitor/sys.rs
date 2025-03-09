@@ -1,4 +1,3 @@
-use crate::utils::SysUtils;
 use crate::{config::types::Config, monitor::storage::Storage};
 use chrono::Utc;
 use sysinfo::{Disks, MemoryRefreshKind, System};
@@ -88,18 +87,19 @@ impl SysInfo {
         // We don't want to update all memories information.
         sys.refresh_memory_specifics(MemoryRefreshKind::nothing().with_ram());
 
-        self.total_ram = self.to_gb(sys.total_memory());
-        self.free_ram = self.to_gb(sys.free_memory());
-        self.used_swap = self.to_gb(sys.used_swap());
+        self.total_ram = sys.total_memory() as f64;
+        self.free_ram = sys.free_memory() as f64;
+        self.used_swap = sys.used_swap() as f64;
 
         self.cpu_usage = sys.cpus()[0].cpu_usage() as f64;
         self.ram_usage = sys.used_memory() as f64;
 
         for disk in disks.list() {
+            let space_used = disk.total_space() - disk.available_space();
             self.disks.push(DiskInfo {
                 filesystem: disk.name().to_string_lossy().to_string(),
                 size: disk.total_space() as usize,
-                used: disk.available_space() as usize,
+                used: space_used as usize,
                 available: disk.available_space() as usize,
                 used_percentage: disk.usage().total_written_bytes as usize,
                 mounted_path: disk.mount_point().to_string_lossy().to_string(),
@@ -125,10 +125,7 @@ impl SysInfo {
         for disk in self.disks.iter() {
             if let Err(e) = storage.insert_diskinfo(&conn, sysinfo_id, disk) {
                 eprintln!("Failed to insert disk info: {}", e);
-                // Continue with other disks even if one fails
             }
         }
     }
 }
-
-impl crate::utils::SysUtils for SysInfo {}
