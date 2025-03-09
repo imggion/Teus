@@ -1,2 +1,5 @@
 /target
 /data
+
+# Dev configs
+teus-dev.toml
