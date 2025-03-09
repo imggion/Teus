@@ -1,7 +1,8 @@
 // teus_webserver/src/main.rs
 
 use crate::{config::types::Config, monitor::storage::Storage};
-use actix_web::{App, HttpResponse, HttpServer, Responder, get};
+use actix_cors::Cors;
+use actix_web::{get, http, middleware, App, HttpResponse, HttpServer, Responder};
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -81,7 +82,16 @@ pub async fn start_webserver(config: &Config) -> std::io::Result<()> {
     let config_data = config.clone();
 
     HttpServer::new(move || {
+        let cors = Cors::default()
+            .allow_any_origin()
+            .allowed_methods(vec!["GET", "POST"])
+            .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
+            .allowed_header(http::header::CONTENT_TYPE)
+            .max_age(3600);
+
         App::new()
+            .wrap(middleware::Logger::default())
+            .wrap(cors)
             .app_data(actix_web::web::Data::new(config_data.clone()))
             .service(sysinfo_handler)
     })
