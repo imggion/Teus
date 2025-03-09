@@ -26,16 +26,13 @@ mod storage_utils {
 
 impl Storage {
     pub fn new(db_path: &str) -> rusqlite::Result<Self> {
-        // Ottieni il path della directory padre
         if let Some(parent) = Path::new(db_path).parent() {
             if let Some(parent_str) = parent.to_str() {
-                // Controlla e crea la directory se non esiste
                 storage_utils::ensure_directory_exists(parent_str)
                     .expect("Failed to create parent directory");
             }
         }
 
-        // Apre o crea il file SQLite nel path specificato
         let conn = Connection::open(db_path)?;
 
         // Enable WAL mode for better concurrency
