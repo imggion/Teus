@@ -1,0 +1,9 @@
+[Unit]
+Description=Teus - Monitoring service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/teus /etc/systemd/teus.toml
+
+[Install]
+WantedBy=multi-user.target
