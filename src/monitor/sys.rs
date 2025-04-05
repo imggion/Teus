@@ -95,17 +95,15 @@ impl SysInfo {
 
         // Calculate the average CPU usage across all CPUs
         let cpu_count = sys.cpus().len();
-        let total_cpu_usage: f64 = sys.cpus().iter()
-            .map(|cpu| cpu.cpu_usage() as f64)
-            .sum();
-        
+        let total_cpu_usage: f64 = sys.cpus().iter().map(|cpu| cpu.cpu_usage() as f64).sum();
+
         // Set the average CPU usage as a percentage
         self.cpu_usage = if cpu_count > 0 {
             total_cpu_usage / cpu_count as f64
         } else {
             0.0
         };
-        
+
         self.ram_usage = sys.used_memory() as f64;
 
         for disk in disks.list() {
