@@ -1,3 +1,5 @@
+use std::{thread, time::Duration};
+
 use crate::{config::types::Config, monitor::storage::Storage};
 use chrono::Utc;
 use sysinfo::{Disks, MemoryRefreshKind, System};
@@ -94,6 +96,9 @@ impl SysInfo {
         // TODO: Collect all cpus information and usage
 
         // Calculate the average CPU usage across all CPUs
+        thread::sleep(Duration::from_millis(250)); // we need to wait for the cpu usage to be updated
+        sys.refresh_cpu_all();
+
         let cpu_count = sys.cpus().len();
         let total_cpu_usage: f64 = sys.cpus().iter().map(|cpu| cpu.cpu_usage() as f64).sum();
 
