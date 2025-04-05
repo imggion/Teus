@@ -1,8 +1,8 @@
 // teus_webserver/src/main.rs
-
+use crate::webserver::services::systeminfo;
 use crate::{config::types::Config, monitor::storage::Storage};
 use actix_cors::Cors;
-use actix_web::{get, http, middleware, App, HttpResponse, HttpServer, Responder};
+use actix_web::{App, HttpResponse, HttpServer, Responder, get, http, middleware};
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -94,6 +94,7 @@ pub async fn start_webserver(config: &Config) -> std::io::Result<()> {
             .wrap(cors)
             .app_data(actix_web::web::Data::new(config_data.clone()))
             .service(sysinfo_handler)
+            .service(systeminfo::get_sysinfo)
     })
     .bind(&url)?
     .run()
