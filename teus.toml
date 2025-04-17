@@ -1,6 +1,8 @@
 [server]
 host = "0.0.0.0"
 port = 26783
+secret = "8ec5cf90-a90a-4037-b8bd-157883f53fd3"
+environment = "Production" # dev | prod
 
 [database]
 path = "/var/lib/teus/sysinfo.db"

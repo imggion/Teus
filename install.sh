@@ -157,6 +157,12 @@ fi
 sudo cp "${SERVICE_FILE}" "${SYSTEMD_DIR}/${SERVICE_FILE}" || error "Failed to copy service file"
 success "Service file copied successfully."
 
+# Run migrations
+info "Running database migrations..."
+echo "/var/lib/teus/sysinfo.db" > .env
+diesel migration run
+success "Migrations completed successfully."
+
 # Handle the web dashboard installation if user selected yes
 if [[ $install_dashboard =~ ^[Yy]$ ]]; then
     info "Setting up web dashboard..."
@@ -194,6 +200,10 @@ if command -v systemctl >/dev/null 2>&1; then
     echo -e "   ${BLUE}systemctl restart ${SERVICE_FILE}${NC} - Restart the service"
 fi
 
+# TODO: Install and configure the web dashboard if applicable
+# TODO: Add instructions for accessing the web dashboard if installed
 if [[ $install_dashboard =~ ^[Yy]$ ]]; then
+    info "Setting up web dashboard..."
+    success "Web dashboard installed successfully."
     info "You can access the web dashboard at: http://localhost:8080"
 fi

@@ -3,3 +3,6 @@
 
 # Dev configs
 teus-dev.toml
+
+# envs
+.env
