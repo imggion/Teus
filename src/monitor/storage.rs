@@ -1,14 +1,16 @@
 use chrono::{DateTime, Utc};
+use diesel::{Connection as ConnectionDiesel, SqliteConnection};
 use rusqlite::{Connection, Result, params};
 use std::path::Path;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 
 use crate::monitor::sys::{DiskInfo, SysInfo};
 
 #[derive(Clone)]
 pub struct Storage {
-    pub conn: Arc<Connection>,
+    // pub conn: Arc<Connection>, // @Info: old Arc reference to don't break the code
+    pub diesel_conn: Arc<Mutex<SqliteConnection>>, // @Info: use to test diesel for now
 }
 
 mod storage_utils {
@@ -24,6 +26,7 @@ mod storage_utils {
     }
 }
 
+// TODO: Migrate Connection -> SqliteConnection
 impl Storage {
     pub fn new(db_path: &str) -> rusqlite::Result<Self> {
         if let Some(parent) = Path::new(db_path).parent() {
@@ -34,6 +37,8 @@ impl Storage {
         }
 
         let conn = Connection::open(db_path)?;
+        let conn_new = SqliteConnection::establish(&db_path)
+            .unwrap_or_else(|e| panic!("Failed to connect, error: {}", e));
 
         // Enable WAL mode for better concurrency
         conn.execute_batch("PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL;")?;
@@ -42,13 +47,15 @@ impl Storage {
         conn.busy_timeout(Duration::from_secs(5))?;
 
         Ok(Self {
-            conn: Arc::new(conn),
+            // conn: Arc::new(conn),
+            diesel_conn: Arc::new(Mutex::new(conn_new)),
         })
     }
 
     /// Initialize the database, by default it creates the tables if they don't exist.
     /// Otherwise it does nothing.
-    pub fn init_db(&self, conn: &Connection) -> Result<()> {
+    #[deprecated = "Now uses Diesel migrations instead"]
+    pub fn _init_db(&self, conn: &Connection) -> Result<()> {
         conn.execute(
             "CREATE TABLE IF NOT EXISTS sysinfo (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
