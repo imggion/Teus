@@ -1,5 +1,6 @@
 mod config;
 mod monitor;
+mod schema;
 mod utils;
 mod webserver;
 
@@ -28,7 +29,7 @@ fn main() {
         path.clone()
     } else {
         // Use default config path if none is provided.
-        "/etc/systemd/teus.toml".to_string()
+        "./teus-dev.toml".to_string()
     };
 
     let config = match config::parser::load_config(config_path) {
