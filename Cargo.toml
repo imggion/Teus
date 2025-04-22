@@ -21,3 +21,4 @@ rusqlite = "0.34.0"
 serde = { version = "1.0.218", features = ["derive"] }
 sysinfo = "0.33.1"
 toml = "0.8.20"
+argon2 = "0.5.3"

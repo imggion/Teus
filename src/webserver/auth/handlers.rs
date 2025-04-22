@@ -4,18 +4,20 @@ use crate::{
     webserver::auth::{middleware::Claims, schema::User},
 };
 use actix_web::{HttpResponse, Responder, post, web};
+use argon2::{
+    Argon2,
+    password_hash::{PasswordHash, PasswordVerifier},
+};
 use chrono::{Duration, Utc};
 use jsonwebtoken::{EncodingKey, Header, encode};
 use serde::{Deserialize, Serialize};
 
-// Struttura per i dati di login
 #[derive(Deserialize)]
 pub struct LoginRequest {
     username: String,
     password: String,
 }
 
-// Risposta di login con token
 #[derive(Serialize)]
 pub struct TokenResponse {
     access: String,
@@ -23,10 +25,23 @@ pub struct TokenResponse {
     expires_in: i64,
 }
 
-// Configurazione JWT
 pub struct JwtConfig {
     pub secret: String,
     pub expiration_hours: i64,
+}
+
+// Verify the password against the hash
+fn is_same_password(password_hash: &str, clear_pass: &str, _salt: &str) -> bool {
+    // Try to parse the password hash
+    let parsed_hash = match PasswordHash::new(password_hash) {
+        Ok(hash) => hash,
+        Err(_) => return false,
+    };
+
+    // Verify the password against the hash
+    Argon2::default()
+        .verify_password(clear_pass.as_bytes(), &parsed_hash)
+        .is_ok()
 }
 
 // Handler di login
@@ -36,19 +51,18 @@ pub async fn login(
     jwt_config: web::Data<JwtConfig>,
     config: actix_web::web::Data<Config>,
 ) -> impl Responder {
-    // TODO: Implement user verification from database
-
-    /* ====================== TEST DIESEL AREA ======================== */
-    let mut storage = Storage::new(&config.database.path).unwrap();
-    // Assuming diesel_conn is an Arc<SqliteConnection>
+    let storage = Storage::new(&config.database.path).unwrap();
     let mut conn = storage.diesel_conn.lock().unwrap();
-    let some_user_test = User::find_by_username(&mut *conn, &login_data.username).unwrap();
+    let user = User::find_by_username(&mut *conn, &login_data.username).unwrap();
     let mut user_id: i32 = 0;
 
-    match some_user_test {
+    match user {
         Some(user) => {
             println!("User found: {:?}", user);
-            if login_data.password != user.password {
+            let is_password_correct =
+                is_same_password(&user.password, &login_data.password, &user.salt);
+
+            if !is_password_correct {
                 return HttpResponse::Unauthorized().json("Invalid credentials");
             }
 
@@ -59,8 +73,6 @@ pub async fn login(
             return HttpResponse::Unauthorized().json("Invalid credentials");
         }
     }
-
-    /* ====================== TEST DIESEL AREA ======================== */
 
     // Calcola la scadenza
     let expiration = Utc::now()

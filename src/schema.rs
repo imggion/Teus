@@ -47,12 +47,12 @@ diesel::table! {
         id -> Nullable<Integer>,
         username -> Text,
         password -> Text,
+        salt -> Text,
     }
 }
 
 diesel::joinable!(diskinfo -> sysinfo (sysinfo_id));
 diesel::joinable!(services -> user (user_id));
-// diesel::joinable!(sysinfo -> user (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     config,
