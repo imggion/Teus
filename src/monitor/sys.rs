@@ -128,7 +128,7 @@ impl SysInfo {
             total_ram: self.total_ram as f32, // Cast f64 to f32
             free_ram: self.free_ram as f32,   // Cast f64 to f32
             used_swap: self.used_swap as f32, // Cast f64 to f32
-            // user_id: 1,                       // Placeholder user_id
+                                              // user_id: 1,                       // Placeholder user_id
         };
 
         // Insert system info using the SchemaSysInfo struct
