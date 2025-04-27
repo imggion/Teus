@@ -1,6 +1,6 @@
 use crate::config::handlers::get_teus_config;
 use crate::monitor::query;
-use crate::webserver::auth::handlers::{JwtConfig, login};
+use crate::webserver::auth::handlers::{login, signup, JwtConfig};
 use crate::webserver::auth::middleware::AuthMiddlewareFactory;
 use crate::webserver::models::sysmodels::{DiskInfoResponse, SysInfoResponse};
 use crate::webserver::services::systeminfo;
@@ -86,6 +86,7 @@ pub async fn start_webserver(config: &Config) -> std::io::Result<()> {
             .service(
                 web::scope("/api/v1/auth")
                     .service(login)
+                    .service(signup)
                     .service(get_teus_config),
             )
             // Protected routes

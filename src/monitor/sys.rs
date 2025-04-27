@@ -3,18 +3,18 @@ use super::schema::{SchemaDiskInfo, SchemaSysInfo}; // Import the Diesel inserta
 use crate::{config::types::Config, monitor::storage::Storage};
 use chrono::Utc;
 use diesel::SqliteConnection; // Import SqliteConnection
-use std::{sync::Mutex, thread, time::Duration}; // Import Mutex
+use std::{thread, time::Duration}; // Import Mutex
 use sysinfo::{Disks, MemoryRefreshKind, System};
 
 #[derive(Clone, Debug)]
 pub struct DiskInfo {
+    pub available: usize,
     // Add disk-related fields here
     pub filesystem: String,
+    pub mounted_path: String,
     pub size: usize,
     pub used: usize,
-    pub available: usize,
     pub used_percentage: usize,
-    pub mounted_path: String,
 }
 
 #[derive(Clone, Debug)]
@@ -120,7 +120,6 @@ impl SysInfo {
         self.timestamp = Utc::now().to_rfc3339(); // Ensure timestamp is current
 
         // Create the SchemaSysInfo struct for insertion
-        // NOTE: Assuming user_id = 1 for now. This should be dynamic in a real app.
         let new_sys_info_to_insert = SchemaSysInfo {
             timestamp: self.timestamp,
             cpu_usage: self.cpu_usage as f32, // Cast f64 to f32
@@ -128,7 +127,6 @@ impl SysInfo {
             total_ram: self.total_ram as f32, // Cast f64 to f32
             free_ram: self.free_ram as f32,   // Cast f64 to f32
             used_swap: self.used_swap as f32, // Cast f64 to f32
-                                              // user_id: 1,                       // Placeholder user_id
         };
 
         // Insert system info using the SchemaSysInfo struct
@@ -157,7 +155,7 @@ impl SysInfo {
             let mount_point = disk.mount_point().to_string_lossy().to_string();
 
             disk_infos_to_insert.push(SchemaDiskInfo {
-                sysinfo_id: sysinfo_id, // Use the ID from the inserted sysinfo
+                sysinfo_id, // Use the ID from the inserted sysinfo
                 filesystem: fs_name,
                 size: (disk.total_space() / 1024 / 1024) as i32, // Convert bytes to MB (adjust if needed) and cast usize to i32
                 used: (space_used / 1024 / 1024) as i32, // Convert bytes to MB and cast usize to i32

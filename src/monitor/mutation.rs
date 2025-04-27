@@ -1,6 +1,5 @@
 // src/monitor/mutation.rs
-use crate::monitor::schema::{SchemaDiskInfo, SchemaSysInfo, SysInfo};
-use crate::schema::{diskinfo, sysinfo};
+use crate::monitor::schema::{SchemaDiskInfo, SchemaSysInfo};
 use diesel::prelude::*;
 use diesel::result::Error;
 
@@ -28,6 +27,7 @@ pub fn insert_sysinfo(
     Ok(inserted_id)
 }
 
+#[allow(dead_code)]
 /// Inserts disk information into the database.
 pub fn insert_diskinfo(
     conn: &mut SqliteConnection,
