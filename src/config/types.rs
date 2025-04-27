@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
 #[derive(Debug, Clone, Deserialize)]
@@ -54,4 +54,9 @@ pub struct DatabaseConfig {
 #[derive(Debug, Deserialize, Clone)]
 pub struct MonitorConfig {
     pub interval_secs: u64,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct IsFirstVisitResponse {
+    pub first_visit: bool,
 }
