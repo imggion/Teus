@@ -18,6 +18,12 @@ pub struct LoginRequest {
     password: String,
 }
 
+#[derive(Deserialize)]
+pub struct SignupRequest {
+    username: String,
+    password: String,
+}
+
 #[derive(Serialize)]
 pub struct TokenResponse {
     access: String,
@@ -28,6 +34,18 @@ pub struct TokenResponse {
 pub struct JwtConfig {
     pub secret: String,
     pub expiration_hours: i64,
+}
+
+#[derive(Serialize)]
+// TODO: Move this to a separate file for every kind of response
+struct GenericResponse {
+    message: String,
+}
+
+#[derive(Serialize)]
+struct NewUserResponse {
+    id: i32,
+    username: String,
 }
 
 // Verify the password against the hash
@@ -104,4 +122,30 @@ pub async fn login(
     };
 
     HttpResponse::Ok().json(response)
+}
+
+#[post("/signup")]
+pub async fn signup(
+    signup_data: web::Json<SignupRequest>,
+    config: actix_web::web::Data<Config>,
+) -> impl Responder {
+    let storage = Storage::new(&config.database.path).unwrap();
+    let mut conn = storage.diesel_conn.lock().unwrap();
+
+    let existing_user = User::find_by_username(&mut *conn, &signup_data.username).unwrap();
+    if existing_user.is_some() {
+        let response = GenericResponse {
+            message: "Username already exists".to_string(),
+        };
+        return HttpResponse::Conflict().json(response);
+    }
+    let user = User::create(&mut *conn, &signup_data.username, &signup_data.password).unwrap();
+
+    // Create a response without the sensitive data
+    let user_response = NewUserResponse {
+        id: user.id.unwrap(),
+        username: user.username,
+    };
+
+    HttpResponse::Created().json(user_response)
 }
