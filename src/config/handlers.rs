@@ -26,6 +26,5 @@ pub async fn is_first_visit(config: actix_web::web::Data<Config>) -> impl Respon
     let first_visit = schema::TeusConfig::is_first_visit(&mut *conn).unwrap();
 
     let response = IsFirstVisitResponse { first_visit };
-
     HttpResponse::Ok().json(response)
 }

@@ -11,7 +11,7 @@ impl TeusConfig {
 
     pub fn get_teus_server_config(
         conn: &mut SqliteConnection,
-    ) -> Result<Option<(TeusConfig)>, Error> {
+    ) -> Result<Option<TeusConfig>, Error> {
         use crate::schema::config::dsl::*;
 
         let latest_teusconfig_option = config
