@@ -30,13 +30,11 @@ impl AuthMiddlewareFactory {
     }
 }
 
-// Middleware che sarà eseguito per ogni richiesta
 pub struct AuthMiddleware<S> {
     service: Rc<S>,
     jwt_secret: String,
 }
 
-// Implementazione della factory per il middleware
 impl<S, B> Transform<S, ServiceRequest> for AuthMiddlewareFactory
 where
     S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error> + 'static,
@@ -74,7 +72,6 @@ where
         let jwt_secret = self.jwt_secret.clone();
 
         Box::pin(async move {
-            // Estrai il token dal header Authorization
             let auth_header = req.headers().get("Authorization");
             let token = match auth_header {
                 Some(header) => {
@@ -91,7 +88,6 @@ where
                 None => return Err(ErrorUnauthorized("Authorization header missing")),
             };
 
-            // Decodifica JWT
             let token_data = decode::<Claims>(
                 token,
                 &DecodingKey::from_secret(jwt_secret.as_bytes()),
@@ -99,19 +95,8 @@ where
             )
             .map_err(|_| ErrorUnauthorized("Invalid token"))?;
 
-            println!("Token decoded successfully: {:?}", token_data);
-
-            // Estrai claims
             let claims = token_data.claims;
-
-            // Verifica scadenza (già fatto da jsonwebtoken)
-
-            // Inserisci i claims nelle estensioni della richiesta
             req.extensions_mut().insert(claims.clone());
-
-            println!("Claims extracted: {:?}", claims);
-
-            // Procedi con il prossimo middleware/handler
             service.call(req).await
         })
     }
