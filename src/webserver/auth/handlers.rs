@@ -72,7 +72,7 @@ pub async fn login(
     let storage = Storage::new(&config.database.path).unwrap();
     let mut conn = storage.diesel_conn.lock().unwrap();
     let user = User::find_by_username(&mut *conn, &login_data.username).unwrap();
-    let mut user_id: i32 = 0;
+    let user_id: i32;
 
     match user {
         Some(user) => {
@@ -92,32 +92,55 @@ pub async fn login(
         }
     }
 
-    // Calcola la scadenza
-    let expiration = Utc::now()
+    // Calcola la scadenza per access token
+    let access_expiration = Utc::now()
         .checked_add_signed(Duration::hours(jwt_config.expiration_hours))
         .expect("Valid timestamp")
         .timestamp() as usize;
 
-    // Crea i claims
-    let claims = Claims {
+    // Calcola la scadenza per refresh token (più lunga, ad esempio 7 giorni)
+    let refresh_expiration = Utc::now()
+        .checked_add_signed(Duration::hours(24 * 7)) // 7 days
+        .expect("Valid timestamp")
+        .timestamp() as usize;
+
+    // Crea i claims per access token
+    let access_claims = Claims {
         sub: login_data.username.clone(),
-        exp: expiration,
+        exp: access_expiration,
         iat: Utc::now().timestamp() as usize,
         id: user_id,
     };
 
-    // Genera il token
+    // Crea i claims per refresh token
+    let refresh_claims = Claims {
+        sub: login_data.username.clone(),
+        exp: refresh_expiration,
+        iat: Utc::now().timestamp() as usize,
+        id: user_id,
+    };
+
+
+    // Genera l'access token
     let access_token = encode(
         &Header::default(),
-        &claims,
+        &access_claims,
         &EncodingKey::from_secret(jwt_config.secret.as_bytes()),
     )
     .unwrap();
 
-    // Restituisci il token
+    // Genera il refresh token
+    let refresh_token = encode(
+        &Header::default(),
+        &refresh_claims,
+        &EncodingKey::from_secret(jwt_config.secret.as_bytes()),
+    )
+    .unwrap();
+
+    // Restituisci i token
     let response = TokenResponse {
         access: access_token,
-        refresh: "Not implemented".to_string(),
+        refresh: refresh_token,
         expires_in: jwt_config.expiration_hours * 3600,
     };
 
