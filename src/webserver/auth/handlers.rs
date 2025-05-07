@@ -1,5 +1,5 @@
 use crate::{
-    config::types::Config,
+    config::{schema::TeusConfig, types::Config},
     monitor::storage::Storage,
     webserver::auth::{middleware::Claims, schema::User},
 };
@@ -81,14 +81,20 @@ pub async fn login(
                 is_same_password(&user.password, &login_data.password, &user.salt);
 
             if !is_password_correct {
-                return HttpResponse::Unauthorized().json("Invalid credentials");
+                let response = GenericResponse {
+                    message: "Invalid Credentials".to_string(),
+                };
+                return HttpResponse::Unauthorized().json(response);
             }
 
             user_id = user.id.unwrap();
         }
         None => {
             println!("User not found");
-            return HttpResponse::Unauthorized().json("Invalid credentials");
+            let response = GenericResponse {
+                message: "Invalid Credentials".to_string(),
+            };
+            return HttpResponse::Unauthorized().json(response);
         }
     }
 
@@ -119,7 +125,6 @@ pub async fn login(
         iat: Utc::now().timestamp() as usize,
         id: user_id,
     };
-
 
     // Genera l'access token
     let access_token = encode(
@@ -163,6 +168,7 @@ pub async fn signup(
         return HttpResponse::Conflict().json(response);
     }
     let user = User::create(&mut *conn, &signup_data.username, &signup_data.password).unwrap();
+    TeusConfig::set_first_visit(&mut *conn, false).unwrap();
 
     // Create a response without the sensitive data
     let user_response = NewUserResponse {
