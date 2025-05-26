@@ -157,11 +157,41 @@ fi
 sudo cp "${SERVICE_FILE}" "${SYSTEMD_DIR}/${SERVICE_FILE}" || error "Failed to copy service file"
 success "Service file copied successfully."
 
+info "Creating Teus service user and group..."
+if ! getent group teus >/dev/null; then
+    sudo groupadd -r teus || error "Failed to create group 'teus'"
+    success "Group 'teus' created."
+else
+    info "Group 'teus' already exists."
+fi
+
+if ! id -u teus >/dev/null 2>&1; then
+    sudo useradd -r -g teus -d /var/lib/teus -s /sbin/nologin -c "Teus Service User" teus || error "Failed to create user 'teus'"
+    success "User 'teus' created."
+else
+    info "User 'teus' already exists."
+fi
+
+info "Creating database directory /var/lib/teus and setting initial ownership..."
+sudo mkdir -p /var/lib/teus || error "Failed to create directory /var/lib/teus"
+sudo chown -R teus:teus /var/lib/teus || error "Failed to set initial ownership for /var/lib/teus"
+success "Database directory setup complete for initial ownership."
+
 # Run migrations
 info "Running database migrations..."
-echo "/var/lib/teus/sysinfo.db" > .env
-diesel migration run
-success "Migrations completed successfully."
+echo "DATABASE_URL=/var/lib/teus/sysinfo.db" > .env
+if diesel migration run; then
+    success "Migrations completed successfully."
+    info "Setting final ownership for /var/lib/teus after migrations..."
+    sudo chown -R teus:teus /var/lib/teus || error "Failed to set final ownership for /var/lib/teus"
+    success "Final ownership set."
+else
+    error "Database migrations failed."
+fi
+
+info "Cleaning up temporary .env file..."
+rm -f .env
+success ".env file cleaned up."
 
 # Handle the web dashboard installation if user selected yes
 if [[ $install_dashboard =~ ^[Yy]$ ]]; then

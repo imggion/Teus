@@ -40,6 +40,15 @@ fn main() {
         }
     };
 
+    // Initialize Storage once
+    let storage = match monitor::storage::Storage::new(&config.database.path) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("Failed to initialize storage: {}", e);
+            process::exit(1); // Exit if storage initialization fails
+        }
+    };
+
     let running = Arc::new(AtomicBool::new(true));
     let r = running.clone();
 
@@ -51,10 +60,11 @@ fn main() {
     .expect("Failed to set Ctrl+C handler");
 
     // Start the webserver in a separate thread
-    let config_clone = config.clone();
+    let config_clone_for_web = config.clone(); // Clone config for webserver
+    let storage_clone_for_web = storage.clone(); // Clone storage for webserver
     let web_handle_thread = thread::spawn(move || {
         // This will run the webserver in a separate thread
-        let _ = webserver::api::start_webserver(&config_clone);
+        let _ = webserver::api::start_webserver(&config_clone_for_web, storage_clone_for_web);
     });
 
     // Give the webserver a moment to start
@@ -62,9 +72,11 @@ fn main() {
     println!("Teus service started");
 
     // Run the system monitor in the main thread
+    // The monitor will create its own Storage instance as needed per run_monitor cycle for now.
+    // This could be further refactored if SysInfo instance became long-lived.
     while running.load(Ordering::SeqCst) {
         let sysinfo = SysInfo::default();
-        sysinfo.run_monitor(&config);
+        sysinfo.run_monitor(&config); // run_monitor internally creates Storage for its DB ops
 
         thread::sleep(std::time::Duration::from_secs(config.monitor.interval_secs));
     }

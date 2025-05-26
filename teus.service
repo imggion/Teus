@@ -3,9 +3,12 @@ Description=Teus - Monitoring service
 After=network.target
 
 [Service]
+User=teus
+Group=teus
 ExecStart=/usr/local/bin/teus /etc/systemd/teus.toml
 KillSignal=SIGINT
 TimeoutStopSec=10
+ReadWritePaths=/var/lib/teus
 
 [Install]
 WantedBy=multi-user.target
