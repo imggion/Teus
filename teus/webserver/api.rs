@@ -6,8 +6,8 @@ use crate::webserver::models::sysmodels::{DiskInfoResponse, SysInfoResponse};
 use crate::webserver::services::systeminfo;
 use crate::{config::types::Config, monitor::storage::Storage};
 use actix_cors::Cors;
-use actix_web::{get, http, middleware, web, App, Error, HttpResponse, HttpServer, Responder};
 use actix_web::error::ErrorInternalServerError;
+use actix_web::{get, http, middleware, web, App, Error, HttpResponse, HttpServer, Responder};
 
 #[get("/sysinfo")]
 async fn sysinfo_handler(storage: web::Data<Storage>) -> Result<HttpResponse, Error> {
