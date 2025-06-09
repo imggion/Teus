@@ -7,26 +7,28 @@ pub enum DockerApi {
     Version,
     Info,
     Containers,
+    ContainerDetails(String),
     Volumes,
     Images,
     Networks,
     Ping,
-    VolumeDetails(String)
+    VolumeDetails(String),
 }
 
 impl DockerApi {
     pub fn endpoint(&self) -> String {
-            match self {
-                DockerApi::Version => "version".to_string(),
-                DockerApi::Info => "info".to_string(),
-                DockerApi::Containers => "containers/json".to_string(),
-                DockerApi::Volumes => "volumes".to_string(),
-                DockerApi::Images => "images".to_string(),
-                DockerApi::Networks => "networks".to_string(),
-                DockerApi::Ping => "_ping".to_string(),
-                DockerApi::VolumeDetails(volume_name) => format!("volumes/{}", volume_name),
-            }
+        match self {
+            DockerApi::Version => "version".to_string(),
+            DockerApi::Info => "info".to_string(),
+            DockerApi::Containers => "containers/json".to_string(),
+            DockerApi::ContainerDetails(container_id) => format!("container/{}/json", container_id),
+            DockerApi::Volumes => "volumes".to_string(),
+            DockerApi::Images => "images".to_string(),
+            DockerApi::Networks => "networks".to_string(),
+            DockerApi::Ping => "_ping".to_string(),
+            DockerApi::VolumeDetails(volume_name) => format!("volumes/{}", volume_name),
         }
+    }
 }
 
 pub enum DockerRequestMethod {
@@ -106,7 +108,7 @@ impl TeusRequestBuilder {
         if is_chunked {
             println!("--> Detected chunked response. Parsing chunks...");
             let mut lines = body_part.trim().lines();
-            lines.next();      // Skip the hex size
+            lines.next(); // Skip the hex size
             lines.next_back(); // Skip the trailing "0"
             lines.collect::<String>()
         } else {
