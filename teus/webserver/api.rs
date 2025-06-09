@@ -2,11 +2,16 @@ use crate::config::handlers::get_teus_config;
 use crate::monitor::query;
 use crate::webserver::auth::handlers::{login, signup, JwtConfig};
 use crate::webserver::auth::middleware::AuthMiddlewareFactory;
+use crate::webserver::docker::handlers::{
+    get_docker_container, get_docker_containers, get_docker_version, get_docker_volume,
+    get_docker_volumes,
+};
 use crate::webserver::models::sysmodels::{DiskInfoResponse, SysInfoResponse};
 use crate::webserver::services::systeminfo;
 use crate::{config::types::Config, monitor::storage::Storage};
 use actix_cors::Cors;
 use actix_web::error::ErrorInternalServerError;
+use actix_web::web::service;
 use actix_web::{get, http, middleware, web, App, Error, HttpResponse, HttpServer, Responder};
 
 #[get("/sysinfo")]
@@ -91,7 +96,12 @@ pub async fn start_webserver(config: &Config, storage: Storage) -> std::io::Resu
                 web::scope("/api/v1/teus")
                     .wrap(AuthMiddlewareFactory::new(jwt_secret.to_string()))
                     .service(sysinfo_handler)
-                    .service(systeminfo::get_sysinfo),
+                    .service(systeminfo::get_sysinfo)
+                    .service(get_docker_version)
+                    .service(get_docker_containers)
+                    .service(get_docker_container)
+                    .service(get_docker_volume)
+                    .service(get_docker_volumes),
             )
     })
     .bind(&url)?
