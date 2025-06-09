@@ -1,12 +1,21 @@
 [workspace]
 # This file is part of the Teus project.
+members = ["crates/docker"]
 default-members = ["."]
 
 [package]
 name = "teus"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 authors = ['gdjohn4s']
+
+[lib]
+name = "teus"
+path = "teus/lib.rs"
+
+[[bin]]
+name = "teus"
+path = "./teus/main.rs"
 
 [dependencies]
 diesel = { version = "2.2.0", features = ["sqlite", "returning_clauses_for_sqlite_3_35"] }
@@ -19,6 +28,11 @@ derive_more = { version = "2.0.1", features = ["display", "error", "from"] }
 jsonwebtoken = "9.3.1"
 rusqlite = "0.34.0"
 serde = { version = "1.0.218", features = ["derive"] }
+serde_json = "1.0"
 sysinfo = "0.33.1"
 toml = "0.8.20"
 argon2 = "0.5.3"
+
+[dev-dependencies]
+tempfile = "3.8"
+tokio-test = "0.4"
