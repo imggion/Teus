@@ -2,13 +2,14 @@ use crate::requests::{DockerApi, DockerRequestMethod, TeusRequestBuilder};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-#[cfg(unix)]
+#[cfg(not(target_os = "macos"))]
 pub const DOCKER_SOCK: &str = "/var/run/docker.sock";
-pub type Containers = Vec<Container>;
 
-#[cfg(target_os = "macos")]
 // For testing purposes, do not forget to replace with your actual Colima or docker path
-const DOCKER_SOCKET_PATH: &str = "/Users/homeerr/.colima/default/docker.sock";
+#[cfg(target_os = "macos")]
+pub const DOCKER_SOCK: &str = "/Users/homeerr/.colima/default/docker.sock";
+
+pub type Containers = Vec<Container>;
 
 // A custom error enum for our Docker operations
 #[derive(Debug)]
@@ -17,6 +18,11 @@ pub enum DockerError {
     ContainerNotFound(String), // We can store the container name/ID
     NetworkError(String),      // Store a generic network error message
     DockerDaemonDown,          // A specific state with no extra data
+}
+
+#[derive(Debug, Deserialize)]
+struct DockerErrorResponse {
+    message: String,
 }
 
 /* -------------------------
@@ -69,6 +75,26 @@ pub struct Port {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Labels {
+    #[serde(rename = "com.docker.compose.config-hash")]
+    pub com_docker_compose_config_hash: Option<String>,
+    #[serde(rename = "com.docker.compose.container-number")]
+    pub com_docker_compose_container_number: Option<String>,
+    #[serde(rename = "com.docker.compose.depends_on")]
+    pub com_docker_compose_depends_on: Option<String>,
+    #[serde(rename = "com.docker.compose.image")]
+    pub com_docker_compose_image: Option<String>,
+    #[serde(rename = "com.docker.compose.oneoff")]
+    pub com_docker_compose_oneoff: Option<String>,
+    #[serde(rename = "com.docker.compose.project")]
+    pub com_docker_compose_project: Option<String>,
+    #[serde(rename = "com.docker.compose.project.config_files")]
+    pub com_docker_compose_project_config_files: Option<String>,
+    #[serde(rename = "com.docker.compose.project.working_dir")]
+    pub com_docker_compose_project_working_dir: Option<String>,
+    #[serde(rename = "com.docker.compose.service")]
+    pub com_docker_compose_service: Option<String>,
+    #[serde(rename = "com.docker.compose.version")]
+    pub com_docker_compose_version: Option<String>,
     #[serde(rename = "io.portainer.agent")]
     pub io_portainer_agent: Option<String>,
     #[serde(rename = "com.docker.desktop.extension.api.version")]
@@ -575,28 +601,60 @@ impl DockerClient {
         }
     }
 
+    /// Helper method to parse Docker responses that might contain errors
+    fn parse_docker_response<T>(&self, response: &str) -> Result<T, DockerError>
+    where
+        T: for<'de> Deserialize<'de>,
+    {
+        // First, try to deserialize as the expected type
+        match serde_json::from_str::<T>(response) {
+            Ok(data) => Ok(data),
+            Err(_) => {
+                // If that fails, try to deserialize as a Docker error response
+                match serde_json::from_str::<DockerErrorResponse>(response) {
+                    Ok(error_response) => Err(DockerError::Generic(error_response.message)),
+                    Err(_) => {
+                        // If both fail, return the raw response as a generic error
+                        Err(DockerError::Generic(format!(
+                            "Failed to parse Docker response: {}",
+                            response
+                        )))
+                    }
+                }
+            }
+        }
+    }
+
     pub fn get_containers(&mut self) -> Result<Containers, DockerError> {
         let response = self
             .request_builder
             .make_request(DockerRequestMethod::Get, DockerApi::Containers);
-        let containers = serde_json::from_str(&response).unwrap();
-        Ok(containers)
+        self.parse_docker_response(&response)
+    }
+
+    pub fn get_container_details(
+        &mut self,
+        container_id: String,
+    ) -> Result<Container, DockerError> {
+        let response = self.request_builder.make_request(
+            DockerRequestMethod::Get,
+            DockerApi::ContainerDetails(container_id),
+        );
+        self.parse_docker_response(&response)
     }
 
     pub fn get_version(&mut self) -> Result<DockerVersion, DockerError> {
         let response = self
             .request_builder
             .make_request(DockerRequestMethod::Get, DockerApi::Version);
-        let version = serde_json::from_str(&response).unwrap();
-        Ok(version)
+        self.parse_docker_response(&response)
     }
 
     pub fn get_volumes(&mut self) -> Result<DockerVolumes, DockerError> {
         let response = self
             .request_builder
             .make_request(DockerRequestMethod::Get, DockerApi::Volumes);
-        let volumes = serde_json::from_str(&response).unwrap();
-        Ok(volumes)
+        self.parse_docker_response(&response)
     }
 
     pub fn get_volume_details(&mut self, volume_name: String) -> Result<Volume, DockerError> {
@@ -604,20 +662,21 @@ impl DockerClient {
             DockerRequestMethod::Get,
             DockerApi::VolumeDetails(volume_name),
         );
-        let volume_details = serde_json::from_str(&response).unwrap();
-        Ok(volume_details)
+        self.parse_docker_response(&response)
     }
 }
 
 mod tests {
     use super::*;
+    use std::env;
 
     // For MacOS
     // TODO: Try to get the home directory from the Env
     #[cfg(target_os = "macos")]
     fn get_test_socket_path() -> Option<String> {
         // Path for Colima or Docker Desktop on macOS
-        Some("/Users/homeerr/.colima/default/docker.sock".to_string())
+        let home_dir = env::var("HOME").unwrap();
+        Some(format!("{home_dir}/.colima/default/docker.sock")) 
     }
 
     // This covers Linux, Windows (via WSL), etc.
@@ -671,7 +730,8 @@ mod tests {
         let mut client = DockerClient::new(test_socket);
         println!("{:?}", client);
 
-        let volume_name = "84146ce4581849ab32389b4fa709e47ce80f2a78075f9a32dbb2f6f8b19456de".to_string();
+        let volume_name =
+            "84146ce4581849ab32389b4fa709e47ce80f2a78075f9a32dbb2f6f8b19456de".to_string();
         let volume_details = client.get_volume_details(volume_name).unwrap();
         println!("{:?}", volume_details);
         assert!(!volume_details.name.is_empty());
