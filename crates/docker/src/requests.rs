@@ -78,13 +78,17 @@ impl TeusRequestBuilder {
         })
     }
 
-    fn format_url_request(&self, method: DockerRequestMethod, api: DockerApi) -> String {
+    #[inline]
+    fn format_url_request(&self, method: DockerRequestMethod, api: DockerApi, query: Option<String>) -> String {
+        let query_str = query.map(|q| format!("?{}", q)).unwrap_or_default();
+        println!("QUERY STR: {}", query_str);
         format!(
-            "{} /{} HTTP/1.1\r\nHost: {}\r\nConnection: close\r\n\r\n",
+            "{} /{} HTTP/1.1\r\nHost: {}{}\r\nConnection: close\r\n\r\n",
             method.method(),
             api.endpoint(),
-            self.host
-        )
+            self.host,
+            query_str,
+        )   
     }
 
     /// Helper method to parse the response buffer into a string.
@@ -123,8 +127,15 @@ impl TeusRequestBuilder {
     // StartService => POST
     // DeleteContainer => DELETE
     // etc..
-    pub fn make_request(&mut self, method: DockerRequestMethod, api: DockerApi) -> String {
-        let request = self.format_url_request(method, api);
+    // TODO: Implement query params in the request builder
+    pub fn make_request(
+        &mut self,
+        method: DockerRequestMethod,
+        api: DockerApi,
+        query: Option<String>,
+    ) -> String {
+        let request = self.format_url_request(method, api, query);
+        println!("REQUEST:\n{}", request);
         if let Err(e) = self.socket_stream.write_all(request.as_bytes()) {
             eprintln!("Failed to write to socket: {}", e);
             return String::new(); // Return early on error
@@ -160,7 +171,7 @@ mod tests {
     #[test]
     fn builds_get_request_correctly() {
         let builder = _setup_builder();
-        let get = builder.format_url_request(DockerRequestMethod::Get, DockerApi::Version);
+        let get = builder.format_url_request(DockerRequestMethod::Get, DockerApi::Version, None);
         assert_eq!(
             get,
             "GET /version HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n"
@@ -170,7 +181,7 @@ mod tests {
     #[test]
     fn builds_put_request_correctly() {
         let builder = _setup_builder();
-        let put = builder.format_url_request(DockerRequestMethod::Put, DockerApi::Version);
+        let put = builder.format_url_request(DockerRequestMethod::Put, DockerApi::Version, None);
         assert_eq!(
             put,
             "PUT /version HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n"
@@ -180,7 +191,7 @@ mod tests {
     #[test]
     fn builds_post_request_correctly() {
         let builder = _setup_builder();
-        let post = builder.format_url_request(DockerRequestMethod::Post, DockerApi::Version);
+        let post = builder.format_url_request(DockerRequestMethod::Post, DockerApi::Version, None);
         assert_eq!(
             post,
             "POST /version HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n"
@@ -190,7 +201,7 @@ mod tests {
     #[test]
     fn builds_delete_request_correctly() {
         let builder = _setup_builder();
-        let delete = builder.format_url_request(DockerRequestMethod::Delete, DockerApi::Version);
+        let delete = builder.format_url_request(DockerRequestMethod::Delete, DockerApi::Version, None);
         assert_eq!(
             delete,
             "DELETE /version HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n"
