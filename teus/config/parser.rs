@@ -18,7 +18,6 @@ pub fn load_config<P: AsRef<Path>>(path: P) -> ConfigResult<Config> {
 mod tests {
     use super::*;
     use std::fs;
-    use std::env;
     use tempfile::NamedTempFile;
 
     fn create_test_config_content() -> String {
@@ -39,7 +38,7 @@ interval_secs = 60
 
     #[test]
     fn test_load_valid_config() {
-        let mut temp_file = NamedTempFile::new().expect("Failed to create temp file");
+        let temp_file = NamedTempFile::new().expect("Failed to create temp file");
         let config_content = create_test_config_content();
         fs::write(temp_file.path(), config_content).expect("Failed to write config");
         
@@ -62,7 +61,7 @@ interval_secs = 60
 
     #[test]
     fn test_load_invalid_toml() {
-        let mut temp_file = NamedTempFile::new().expect("Failed to create temp file");
+        let temp_file = NamedTempFile::new().expect("Failed to create temp file");
         let invalid_content = "invalid toml content [[[";
         fs::write(temp_file.path(), invalid_content).expect("Failed to write invalid config");
         
@@ -72,7 +71,7 @@ interval_secs = 60
 
     #[test]
     fn test_load_incomplete_config() {
-        let mut temp_file = NamedTempFile::new().expect("Failed to create temp file");
+        let temp_file = NamedTempFile::new().expect("Failed to create temp file");
         let incomplete_content = r#"
 [server]
 host = "127.0.0.1"
@@ -86,7 +85,7 @@ host = "127.0.0.1"
 
     #[test]
     fn test_load_config_with_different_environment() {
-        let mut temp_file = NamedTempFile::new().expect("Failed to create temp file");
+        let temp_file = NamedTempFile::new().expect("Failed to create temp file");
         let config_content = r#"
 [server]
 host = "0.0.0.0"
