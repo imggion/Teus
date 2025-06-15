@@ -37,3 +37,10 @@ docker = { path = "crates/docker"}
 [dev-dependencies]
 tempfile = "3.8"
 tokio-test = "0.4"
+
+[profile.release]
+opt-level = "z"          # Optimize for size
+lto = true               # Enable link-time optimization
+strip = true             # Strip symbols from binary
+panic = "abort"          # Abort on panic instead of unwinding
+codegen-units = 1        # Reduce parallel code generation units
