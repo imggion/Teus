@@ -5,7 +5,7 @@ use crate::{
     },
     monitor::storage::Storage,
 };
-use actix_web::{get, web, Error, HttpResponse, Responder};
+use actix_web::{get, web, Error, HttpResponse};
 use actix_web::error::ErrorInternalServerError;
 
 #[get("/teus-config")]
