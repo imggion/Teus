@@ -6,7 +6,6 @@ mod tests {
     use std::io::{Read, Write};
     use std::os::unix::net::UnixStream;
 
-    use reqwest::Client; // This is the reqwest client
 
     // Replace with your actual Docker socket path
     // const DOCKER_SOCKET_PATH: &str = "/var/run/docker.sock"; // Standard Linux
@@ -39,7 +38,6 @@ mod tests {
         // Connection: close (optional, but good for simplicity here)
         // (empty line)
         let request = "GET /version HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n";
-        let request_containers = "GET /containers/json HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n";
 
         match stream.write_all(request.as_bytes()) {
             Ok(_) => println!("Sent request:\n{}", request),
@@ -56,7 +54,7 @@ mod tests {
 
                 // --- Basic Parsing ---
                 // This just separates headers and body.
-                if let Some((headers, body)) = response.split_once("\r\n\r\n") {
+                if let Some((_, _)) = response.split_once("\r\n\r\n") {
                     println!("\n--- Headers ---");
                     // println!("{}", headers);
                     println!("\n--- Body ---");
