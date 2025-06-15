@@ -1,6 +1,7 @@
 use crate::requests::{DockerApi, DockerRequestMethod, TeusRequestBuilder};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::collections::HashMap;
 
 #[cfg(not(target_os = "macos"))]
 pub const DOCKER_SOCK: &str = "/var/run/docker.sock";
@@ -45,8 +46,9 @@ pub struct Container {
     pub created: i64,
     #[serde(rename = "Ports")]
     pub ports: Vec<Port>,
-    #[serde(rename = "Labels")]
-    pub labels: Labels,
+    // Changed from Labels to HashMap<String, String> to handle the case where some labels are missing
+    #[serde(rename = "Labels", default)]
+    pub labels: HashMap<String, String>,
     #[serde(rename = "State")]
     pub state: String,
     #[serde(rename = "Status")]
@@ -130,18 +132,12 @@ pub struct HostConfig {
 #[serde(rename_all = "camelCase")]
 pub struct NetworkSettings {
     #[serde(rename = "Networks")]
-    pub networks: Networks,
+    pub networks: HashMap<String, NetworkDetails>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Networks {
-    pub bridge: Bridge,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Bridge {
+pub struct NetworkDetails {
     #[serde(rename = "IPAMConfig")]
     pub ipamconfig: Value,
     #[serde(rename = "Links")]
@@ -149,7 +145,7 @@ pub struct Bridge {
     #[serde(rename = "Aliases")]
     pub aliases: Value,
     #[serde(rename = "MacAddress")]
-    pub mac_address: String,
+    pub mac_address: Option<String>,
     #[serde(rename = "DriverOpts")]
     pub driver_opts: Value,
     #[serde(rename = "NetworkID")]
@@ -157,15 +153,15 @@ pub struct Bridge {
     #[serde(rename = "EndpointID")]
     pub endpoint_id: String,
     #[serde(rename = "Gateway")]
-    pub gateway: String,
+    pub gateway: Option<String>,
     #[serde(rename = "IPAddress")]
-    pub ipaddress: String,
+    pub ipaddress: Option<String>,
     #[serde(rename = "IPPrefixLen")]
     pub ipprefix_len: i64,
     #[serde(rename = "IPv6Gateway")]
-    pub ipv6gateway: String,
+    pub ipv6gateway: Option<String>,
     #[serde(rename = "GlobalIPv6Address")]
-    pub global_ipv6address: String,
+    pub global_ipv6address: Option<String>,
     #[serde(rename = "GlobalIPv6PrefixLen")]
     pub global_ipv6prefix_len: i64,
     #[serde(rename = "DNSNames")]
@@ -625,10 +621,13 @@ impl DockerClient {
         }
     }
 
+    
     pub fn get_containers(&mut self) -> Result<Containers, DockerError> {
-        let response = self
-            .request_builder
-            .make_request(DockerRequestMethod::Get, DockerApi::Containers);
+        let response = self.request_builder.make_request(
+            DockerRequestMethod::Get,
+            DockerApi::Containers,
+            None,
+        );
         self.parse_docker_response(&response)
     }
 
@@ -639,21 +638,22 @@ impl DockerClient {
         let response = self.request_builder.make_request(
             DockerRequestMethod::Get,
             DockerApi::ContainerDetails(container_id),
+            None,
         );
         self.parse_docker_response(&response)
     }
 
     pub fn get_version(&mut self) -> Result<DockerVersion, DockerError> {
-        let response = self
-            .request_builder
-            .make_request(DockerRequestMethod::Get, DockerApi::Version);
+        let response =
+            self.request_builder
+                .make_request(DockerRequestMethod::Get, DockerApi::Version, None);
         self.parse_docker_response(&response)
     }
 
     pub fn get_volumes(&mut self) -> Result<DockerVolumes, DockerError> {
-        let response = self
-            .request_builder
-            .make_request(DockerRequestMethod::Get, DockerApi::Volumes);
+        let response =
+            self.request_builder
+                .make_request(DockerRequestMethod::Get, DockerApi::Volumes, None);
         self.parse_docker_response(&response)
     }
 
@@ -661,22 +661,25 @@ impl DockerClient {
         let response = self.request_builder.make_request(
             DockerRequestMethod::Get,
             DockerApi::VolumeDetails(volume_name),
+            None,
         );
         self.parse_docker_response(&response)
     }
 }
 
 mod tests {
+    #[allow(unused_imports)]
     use super::*;
     use std::env;
 
     // For MacOS
     // TODO: Try to get the home directory from the Env
+    #[allow(dead_code)]
     #[cfg(target_os = "macos")]
     fn get_test_socket_path() -> Option<String> {
         // Path for Colima or Docker Desktop on macOS
         let home_dir = env::var("HOME").unwrap();
-        Some(format!("{home_dir}/.colima/default/docker.sock")) 
+        Some(format!("{home_dir}/.colima/default/docker.sock"))
     }
 
     // This covers Linux, Windows (via WSL), etc.
