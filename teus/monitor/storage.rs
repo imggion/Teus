@@ -56,7 +56,6 @@ impl Storage {
 mod tests {
     use super::*;
     use tempfile::TempDir;
-    use std::fs;
 
     #[test]
     fn test_storage_new_success() {
