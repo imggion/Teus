@@ -19,6 +19,7 @@ impl<'de> Deserialize<'de> for Environment {
 }
 
 impl Environment {
+    #[allow(dead_code)]
     pub fn as_str(&self) -> &'static str {
         match self {
             Environment::Development => "dev",
@@ -48,12 +49,13 @@ pub struct Config {
     pub monitor: MonitorConfig,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Deserialize, Clone)]
 pub struct ServerConfig {
     pub host: String,
     pub port: u16,
     pub secret: String,
-    pub environment: Environment,
+    pub environment: Environment, // Not used yet
 }
 
 #[derive(Debug, Deserialize, Clone)]
