@@ -6,6 +6,7 @@ use diesel::SqliteConnection; // Import SqliteConnection
 use std::{thread, time::Duration}; // Import Mutex
 use sysinfo::{Disks, MemoryRefreshKind, System};
 
+#[allow(dead_code)]
 #[derive(Clone, Debug)]
 pub struct DiskInfo {
     pub available: usize,
@@ -17,6 +18,7 @@ pub struct DiskInfo {
     pub used_percentage: usize,
 }
 
+#[allow(dead_code)]
 #[derive(Clone, Debug)]
 pub struct SysInfo {
     #[allow(dead_code)]
@@ -180,6 +182,7 @@ mod tests {
     use super::*;
     use crate::config::types::{Config, ServerConfig, DatabaseConfig, MonitorConfig, Environment};
 
+    #[allow(dead_code)]
     fn create_test_config() -> Config {
         Config {
             server: ServerConfig {
