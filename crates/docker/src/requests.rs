@@ -21,7 +21,7 @@ impl DockerApi {
             DockerApi::Version => "version".to_string(),
             DockerApi::Info => "info".to_string(),
             DockerApi::Containers => "containers/json".to_string(),
-            DockerApi::ContainerDetails(container_id) => format!("container/{}/json", container_id),
+            DockerApi::ContainerDetails(container_id) => format!("containers/{}/json", container_id),
             DockerApi::Volumes => "volumes".to_string(),
             DockerApi::Images => "images".to_string(),
             DockerApi::Networks => "networks".to_string(),
@@ -83,12 +83,12 @@ impl TeusRequestBuilder {
         let query_str = query.map(|q| format!("?{}", q)).unwrap_or_default();
         println!("QUERY STR: {}", query_str);
         format!(
-            "{} /{} HTTP/1.1\r\nHost: {}{}\r\nConnection: close\r\n\r\n",
+            "{} /{}{} HTTP/1.1\r\nHost: {}\r\nConnection: close\r\n\r\n",
             method.method(),
             api.endpoint(),
-            self.host,
             query_str,
-        )   
+            self.host,
+        )
     }
 
     /// Helper method to parse the response buffer into a string.
