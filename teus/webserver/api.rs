@@ -13,6 +13,7 @@ use actix_cors::Cors;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{get, http, middleware, web, App, Error, HttpResponse, HttpServer};
 
+// TODO: move this api into another file `syshandler` or something
 #[get("/sysinfo")]
 async fn sysinfo_handler(storage: web::Data<Storage>) -> Result<HttpResponse, Error> {
     let mut conn = storage.diesel_conn.lock().map_err(|_| {

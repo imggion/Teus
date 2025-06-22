@@ -1,58 +1,305 @@
-// src/monitor/schema.rs
+//! Database schema structures for system monitoring data.
+//!
+//! This module defines the data structures used to store and retrieve
+//! system monitoring information in the SQLite database. It includes
+//! both insertable structures for writing new data and queryable
+//! structures for reading existing data.
+
 use crate::schema::{diskinfo, sysinfo};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
+/// Structure for inserting system information records into the database.
+///
+/// This structure represents a snapshot of system resource usage at a
+/// specific point in time. It's designed to be inserted into the `sysinfo`
+/// table and serves as the primary record for system monitoring data.
+///
+/// # Database Schema
+///
+/// Maps to the `sysinfo` table with the following constraints:
+/// - `timestamp` should be in RFC3339 format for consistency
+/// - All usage values are stored as floating-point numbers for precision
+/// - Memory values are typically stored in bytes or megabytes
+///
+/// # Examples
+///
+/// ```rust
+/// use teus::monitor::schema::SchemaSysInfo;
+/// use chrono::Utc;
+///
+/// let sys_info = SchemaSysInfo {
+///     timestamp: Utc::now().to_rfc3339(),
+///     cpu_usage: 25.5,
+///     ram_usage: 4096.0,
+///     total_ram: 16384.0,
+///     free_ram: 8192.0,
+///     used_swap: 512.0,
+/// };
+/// ```
 #[derive(Insertable, Debug, Serialize, Deserialize)]
 #[diesel(table_name = sysinfo)]
 pub struct SchemaSysInfo {
+    /// Timestamp when this system information was collected.
+    ///
+    /// Should be in RFC3339 format (e.g., "2024-01-01T12:00:00Z")
+    /// for consistent parsing and sorting.
     pub timestamp: String,
-    pub cpu_usage: f32, // Changed to f32 to match schema
-    pub ram_usage: f32, // Changed to f32 to match schema
-    pub total_ram: f32, // Changed to f32 to match schema
-    pub free_ram: f32,  // Changed to f32 to match schema
-    pub used_swap: f32, // Changed to f32 to match schema
-    // pub user_id: i32,   // Assuming user_id is i32
+
+    /// CPU usage percentage at the time of collection.
+    ///
+    /// Range: 0.0 to 100.0, where 100.0 represents full CPU utilization.
+    pub cpu_usage: f32,
+
+    /// Amount of RAM currently in use, in megabytes.
+    ///
+    /// This represents the memory actively being used by processes,
+    /// excluding cached and buffered memory.
+    pub ram_usage: f32,
+
+    /// Total amount of RAM available in the system, in megabytes.
+    ///
+    /// This is the physical memory capacity and should remain
+    /// relatively constant unless hardware changes occur.
+    pub total_ram: f32,
+
+    /// Amount of RAM currently free and available, in megabytes.
+    ///
+    /// This represents memory that is immediately available for
+    /// new processes without requiring swapping or cache eviction.
+    pub free_ram: f32,
+
+    /// Amount of swap space currently in use, in megabytes.
+    ///
+    /// High swap usage may indicate memory pressure and can
+    /// significantly impact system performance.
+    pub used_swap: f32,
 }
 
+/// Structure for inserting disk information records into the database.
+///
+/// This structure represents disk usage information for a specific filesystem
+/// at the time of system monitoring. Multiple disk records can be associated
+/// with a single system information record through the `sysinfo_id` foreign key.
+///
+/// # Database Relationships
+///
+/// - `sysinfo_id`: Foreign key referencing the `sysinfo` table
+/// - Each `SchemaSysInfo` record can have multiple associated `SchemaDiskInfo` records
+///
+/// # Storage Units
+///
+/// All size values are stored in megabytes for consistency and to avoid
+/// integer overflow issues with very large storage devices.
+///
+/// # Examples
+///
+/// ```rust
+/// use teus::monitor::schema::SchemaDiskInfo;
+///
+/// let disk_info = SchemaDiskInfo {
+///     sysinfo_id: 1,
+///     filesystem: "ext4".to_string(),
+///     size: 1000000,      // 1TB in MB
+///     used: 750000,       // 750GB in MB
+///     available: 250000,  // 250GB in MB
+///     used_percentage: 75,
+///     mounted_path: "/".to_string(),
+/// };
+/// ```
 #[derive(Insertable, Debug, Serialize, Deserialize)]
 #[diesel(table_name = diskinfo)]
 pub struct SchemaDiskInfo {
+    /// Foreign key reference to the associated system information record.
+    ///
+    /// This links the disk information to a specific monitoring snapshot,
+    /// allowing for historical tracking of disk usage over time.
     pub sysinfo_id: i32,
+
+    /// Type of filesystem (e.g., "ext4", "ntfs", "xfs", "btrfs").
+    ///
+    /// This information helps identify the storage technology and
+    /// can be useful for performance analysis and troubleshooting.
     pub filesystem: String,
-    pub size: i32,      // Changed to i32 to match schema (Integer maps to i32 often)
-    pub used: i32,      // Changed to i32
-    pub available: i32, // Changed to i32
-    pub used_percentage: i32, // Changed to i32
+
+    /// Total size of the filesystem in megabytes.
+    ///
+    /// This represents the total capacity of the storage device
+    /// or partition, including space used by the filesystem metadata.
+    pub size: i32,
+
+    /// Amount of space currently used in megabytes.
+    ///
+    /// This includes all files, directories, and filesystem overhead,
+    /// but may not account for reserved space depending on the filesystem.
+    pub used: i32,
+
+    /// Amount of space available for new data in megabytes.
+    ///
+    /// This is the space that can be immediately used for new files
+    /// and may be less than (total - used) due to filesystem reservations.
+    pub available: i32,
+
+    /// Percentage of disk space currently in use.
+    ///
+    /// Range: 0 to 100, calculated as (used / total) * 100.
+    /// Values above 90% typically indicate the need for cleanup or expansion.
+    pub used_percentage: i32,
+
+    /// Mount point or drive letter where the filesystem is accessible.
+    ///
+    /// Examples: "/", "/home", "/var", "C:", "D:"
+    /// This helps identify which part of the system's storage hierarchy
+    /// this disk information represents.
     pub mounted_path: String,
 }
 
-// You might also want structs for querying data later
+/// Structure for querying system information records from the database.
+///
+/// This structure is used when retrieving system monitoring data from the
+/// database. It includes the database-generated ID field and can be used
+/// for displaying historical monitoring data, generating reports, and
+/// API responses.
+///
+/// # Usage Patterns
+///
+/// - Retrieving recent system performance data for dashboards
+/// - Historical analysis and trend reporting
+/// - API endpoints that return monitoring data to clients
+/// - Data export and backup operations
+///
+/// # Examples
+///
+/// ```rust
+/// use teus::monitor::schema::SysInfo;
+/// use diesel::prelude::*;
+///
+/// // Query recent system information (pseudo-code)
+/// // let recent_data: Vec<SysInfo> = sysinfo::table
+/// //     .order(sysinfo::timestamp.desc())
+/// //     .limit(10)
+/// //     .load(&mut connection)?;
+/// ```
 #[derive(Queryable, Selectable, Identifiable, Debug, Serialize, Deserialize)]
 #[diesel(table_name = sysinfo)]
 pub struct SysInfo {
-    #[diesel(column_name = id)] // Explicitly map id if needed, depends on schema generation
+    /// Database-generated unique identifier for this record.
+    ///
+    /// This is the primary key and is automatically assigned when
+    /// the record is inserted into the database. Used for referencing
+    /// this specific monitoring snapshot.
+    #[diesel(column_name = id)]
     pub id: Option<i32>,
+
+    /// Timestamp when this system information was collected.
+    ///
+    /// Stored in RFC3339 format for consistent parsing and timezone handling.
     pub timestamp: String,
+
+    /// CPU usage percentage at the time of collection.
+    ///
+    /// Range: 0.0 to 100.0, representing the overall CPU utilization
+    /// across all cores and threads.
     pub cpu_usage: f32,
+
+    /// Amount of RAM currently in use, in megabytes.
+    ///
+    /// Active memory usage excluding cached and buffered memory.
     pub ram_usage: f32,
+
+    /// Total amount of RAM available in the system, in megabytes.
+    ///
+    /// Physical memory capacity of the system.
     pub total_ram: f32,
+
+    /// Amount of RAM currently free and available, in megabytes.
+    ///
+    /// Memory immediately available for allocation to new processes.
     pub free_ram: f32,
+
+    /// Amount of swap space currently in use, in megabytes.
+    ///
+    /// High values may indicate memory pressure and performance issues.
     pub used_swap: f32,
-    // pub user_id: i32,
 }
 
+/// Structure for querying disk information records from the database.
+///
+/// This structure represents stored disk usage information that can be
+/// retrieved for historical analysis, reporting, and API responses.
+/// It includes the database-generated ID and maintains the relationship
+/// to its parent system information record.
+///
+/// # Relationships
+///
+/// Each `DiskInfo` record is linked to a `SysInfo` record through
+/// the `sysinfo_id` foreign key, allowing for comprehensive system
+/// monitoring data retrieval.
+///
+/// # Common Query Patterns
+///
+/// - Retrieving disk usage trends over time
+/// - Finding disks approaching capacity limits
+/// - Generating storage utilization reports
+/// - Monitoring filesystem-specific usage patterns
+///
+/// # Examples
+///
+/// ```rust
+/// use teus::monitor::schema::DiskInfo;
+/// use diesel::prelude::*;
+///
+/// // Query disk info for high usage (pseudo-code)
+/// // let high_usage_disks: Vec<DiskInfo> = diskinfo::table
+/// //     .filter(diskinfo::used_percentage.gt(90))
+/// //     .load(&mut connection)?;
+/// ```
 #[derive(Queryable, Selectable, Identifiable, Debug, Serialize, Deserialize)]
 #[diesel(table_name = diskinfo)]
 pub struct DiskInfo {
-    #[diesel(column_name = id)] // Explicitly map id
+    /// Database-generated unique identifier for this disk record.
+    ///
+    /// Primary key used for referencing this specific disk monitoring entry.
+    #[diesel(column_name = id)]
     pub id: Option<i32>,
+
+    /// Foreign key reference to the associated system information record.
+    ///
+    /// Links this disk information to a specific monitoring snapshot,
+    /// enabling time-series analysis of disk usage.
     pub sysinfo_id: i32,
+
+    /// Type of filesystem (e.g., "ext4", "ntfs", "xfs", "btrfs").
+    ///
+    /// Identifies the storage technology and formatting of this disk.
     pub filesystem: String,
-    pub size: i32,      // Changed to i32 to match schema (Integer maps to i32 often)
-    pub used: i32,      // Changed to i32
-    pub available: i32, // Changed to i32
+
+    /// Total size of the filesystem in megabytes.
+    ///
+    /// Total capacity including filesystem overhead and reserved space.
+    pub size: i32,
+
+    /// Amount of space currently used in megabytes.
+    ///
+    /// Space occupied by files, directories, and filesystem metadata.
+    pub used: i32,
+
+    /// Amount of space available for new data in megabytes.
+    ///
+    /// Immediately usable space, may be less than (size - used)
+    /// due to filesystem reservations and overhead.
+    pub available: i32,
+
+    /// Percentage of disk space currently in use.
+    ///
+    /// Range: 0 to 100, useful for quick assessment of storage pressure.
+    /// Values above 90% typically require attention.
     pub used_percentage: i32,
+
+    /// Mount point or drive letter where the filesystem is accessible.
+    ///
+    /// The path in the system's directory hierarchy where this
+    /// storage device can be accessed (e.g., "/", "/home", "C:").
     pub mounted_path: String,
 }
 
