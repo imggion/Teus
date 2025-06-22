@@ -180,7 +180,7 @@ impl SysInfo {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::types::{Config, ServerConfig, DatabaseConfig, MonitorConfig, Environment};
+    use crate::config::types::{Config, DatabaseConfig, Environment, MonitorConfig, ServerConfig};
 
     #[allow(dead_code)]
     fn create_test_config() -> Config {
@@ -194,9 +194,7 @@ mod tests {
             database: DatabaseConfig {
                 path: ":memory:".to_string(),
             },
-            monitor: MonitorConfig {
-                interval_secs: 60,
-            },
+            monitor: MonitorConfig { interval_secs: 60 },
         }
     }
 
@@ -241,25 +239,16 @@ mod tests {
 
     #[test]
     fn test_sysinfo_new() {
-        let disks = vec![
-            DiskInfo {
-                available: 1000,
-                filesystem: "ext4".to_string(),
-                mounted_path: "/".to_string(),
-                size: 2000,
-                used: 1000,
-                used_percentage: 50,
-            }
-        ];
+        let disks = vec![DiskInfo {
+            available: 1000,
+            filesystem: "ext4".to_string(),
+            mounted_path: "/".to_string(),
+            size: 2000,
+            used: 1000,
+            used_percentage: 50,
+        }];
 
-        let sysinfo = SysInfo::new(
-            25.5,
-            8000.0,
-            16000.0,
-            8000.0,
-            2000.0,
-            disks.clone(),
-        );
+        let sysinfo = SysInfo::new(25.5, 8000.0, 16000.0, 8000.0, 2000.0, disks.clone());
 
         assert_eq!(sysinfo.id, 0);
         assert_eq!(sysinfo.timestamp, "");
@@ -294,25 +283,16 @@ mod tests {
 
     #[test]
     fn test_sysinfo_clone() {
-        let disks = vec![
-            DiskInfo {
-                available: 2000,
-                filesystem: "btrfs".to_string(),
-                mounted_path: "/home".to_string(),
-                size: 4000,
-                used: 2000,
-                used_percentage: 50,
-            }
-        ];
+        let disks = vec![DiskInfo {
+            available: 2000,
+            filesystem: "btrfs".to_string(),
+            mounted_path: "/home".to_string(),
+            size: 4000,
+            used: 2000,
+            used_percentage: 50,
+        }];
 
-        let sysinfo = SysInfo::new(
-            15.7,
-            4000.0,
-            8000.0,
-            4000.0,
-            1000.0,
-            disks,
-        );
+        let sysinfo = SysInfo::new(15.7, 4000.0, 8000.0, 4000.0, 1000.0, disks);
 
         let cloned = sysinfo.clone();
         assert_eq!(sysinfo.id, cloned.id);
@@ -358,11 +338,11 @@ mod tests {
 
         // Test with extreme values
         let sysinfo = SysInfo::new(
-            100.0,        // Max CPU usage
-            0.0,          // No RAM usage
+            100.0,           // Max CPU usage
+            0.0,             // No RAM usage
             u64::MAX as f64, // Maximum possible RAM
             u64::MAX as f64, // Maximum free RAM
-            0.0,          // No swap usage
+            0.0,             // No swap usage
             disks,
         );
 
@@ -420,14 +400,7 @@ mod tests {
             },
         ];
 
-        let sysinfo = SysInfo::new(
-            30.0,
-            4000.0,
-            8000.0,
-            4000.0,
-            1000.0,
-            disks,
-        );
+        let sysinfo = SysInfo::new(30.0, 4000.0, 8000.0, 4000.0, 1000.0, disks);
 
         assert_eq!(sysinfo.disks.len(), 2);
         assert_eq!(sysinfo.disks[0].mounted_path, "/");
