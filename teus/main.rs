@@ -3,6 +3,7 @@ mod monitor;
 mod schema;
 mod utils;
 mod webserver;
+mod bookmarks;
 
 use monitor::sys::SysInfo;
 use std::{

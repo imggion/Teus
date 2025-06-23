@@ -1,3 +1,4 @@
+use crate::bookmarks::handlers as bookmark_handlers;
 use crate::config::handlers::get_teus_config;
 use crate::monitor::query;
 use crate::webserver::auth::handlers::{login, signup, JwtConfig};
@@ -101,7 +102,9 @@ pub async fn start_webserver(config: &Config, storage: Storage) -> std::io::Resu
                     .service(get_docker_containers)
                     .service(get_docker_container)
                     .service(get_docker_volume)
-                    .service(get_docker_volumes),
+                    .service(get_docker_volumes)
+                    .service(bookmark_handlers::get_user_services)
+                    .service(bookmark_handlers::add_service),
             )
     })
     .bind(&url)?
