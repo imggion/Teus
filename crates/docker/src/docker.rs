@@ -1,4 +1,4 @@
-use crate::requests::{DockerApi, DockerRequestMethod, TeusRequestBuilder};
+use crate::{container::ContainerExtended, requests::{DockerApi, DockerRequestMethod, TeusRequestBuilder}};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
@@ -83,7 +83,7 @@ pub struct Container {
     /// Used for all container operations and API calls.
     #[serde(rename = "Id")]
     pub id: String,
-    
+
     /// Container names as assigned by Docker.
     ///
     /// Typically includes the primary name with leading slash
@@ -91,21 +91,21 @@ pub struct Container {
     /// are possible when containers are linked.
     #[serde(rename = "Names")]
     pub names: Vec<String>,
-    
+
     /// Docker image name and tag used to create this container.
     ///
     /// Format: `repository:tag` or `repository@digest`
     /// Examples: "nginx:latest", "ubuntu:22.04", "redis:alpine"
     #[serde(rename = "Image")]
     pub image: String,
-    
+
     /// Unique identifier of the Docker image.
     ///
     /// SHA256 hash of the image used to create this container.
     /// Used for image management and container-to-image relationships.
     #[serde(rename = "ImageID")]
     pub image_id: String,
-    
+
     /// Command executed when the container starts.
     ///
     /// The primary process command line that runs inside the container.
@@ -113,14 +113,14 @@ pub struct Container {
     /// command specified when the container was created.
     #[serde(rename = "Command")]
     pub command: String,
-    
+
     /// Container creation timestamp (Unix timestamp).
     ///
     /// When the container was created (not started). Used for
     /// sorting, filtering, and lifecycle management.
     #[serde(rename = "Created")]
     pub created: i64,
-    
+
     /// Network port mappings and exposed ports.
     ///
     /// Contains information about ports exposed by the container
@@ -128,7 +128,7 @@ pub struct Container {
     /// and service discovery.
     #[serde(rename = "Ports")]
     pub ports: Vec<Port>,
-    
+
     /// Container labels as key-value pairs.
     ///
     /// Metadata labels assigned to the container, including
@@ -137,14 +137,14 @@ pub struct Container {
     /// label handling when some labels may be missing.
     #[serde(rename = "Labels", default)]
     pub labels: HashMap<String, String>,
-    
+
     /// Current container state.
     ///
     /// Basic container state: "created", "restarting", "running",
     /// "removing", "paused", "exited", or "dead".
     #[serde(rename = "State")]
     pub state: String,
-    
+
     /// Human-readable container status description.
     ///
     /// Detailed status information including uptime for running
@@ -152,21 +152,21 @@ pub struct Container {
     /// Examples: "Up 2 hours", "Exited (0) 5 minutes ago"
     #[serde(rename = "Status")]
     pub status: String,
-    
+
     /// Host system configuration for the container.
     ///
     /// Contains resource limits, networking mode, and other
     /// host-level configuration that affects container runtime behavior.
     #[serde(rename = "HostConfig")]
     pub host_config: HostConfig,
-    
+
     /// Network configuration and connectivity information.
     ///
     /// Details about networks the container is connected to,
     /// IP addresses, and network-related settings.
     #[serde(rename = "NetworkSettings")]
     pub network_settings: NetworkSettings,
-    
+
     /// Volume and bind mount information.
     ///
     /// Contains details about storage volumes, bind mounts, and
@@ -232,24 +232,24 @@ pub struct Port {
     /// - `Some("192.168.1.100")`: Bound to specific IP
     #[serde(rename = "IP")]
     pub ip: Option<String>,
-    
+
     /// Port number inside the container.
     ///
     /// This is the port that the application inside the container
     /// is listening on. Always present for exposed ports.
     #[serde(rename = "PrivatePort")]
     pub private_port: i64,
-    
+
     /// Port number on the host system.
     ///
     /// - `None`: Port is exposed but not published to host
     /// - `Some(port)`: Port is mapped to this host port number
-    /// 
+    ///
     /// When present, external traffic to this host port will be
     /// forwarded to the container's private port.
     #[serde(rename = "PublicPort")]
     pub public_port: Option<i64>,
-    
+
     /// Network protocol type.
     ///
     /// Common values:
@@ -424,91 +424,91 @@ pub struct NetworkDetails {
     /// for this network connection. Structure varies by network driver.
     #[serde(rename = "IPAMConfig")]
     pub ipamconfig: Value,
-    
+
     /// Container links configuration.
     ///
     /// Legacy Docker links to other containers on the same network.
     /// Generally replaced by custom networks and service discovery.
     #[serde(rename = "Links")]
     pub links: Value,
-    
+
     /// Network aliases for this container.
     ///
     /// DNS names by which this container can be reached on this network.
     /// Used for service discovery within Docker networks.
     #[serde(rename = "Aliases")]
     pub aliases: Value,
-    
+
     /// MAC address assigned to the container's network interface.
     ///
     /// Hardware address used for this network connection. May be
     /// automatically assigned or explicitly configured.
     #[serde(rename = "MacAddress")]
     pub mac_address: Option<String>,
-    
+
     /// Network driver-specific options.
     ///
     /// Configuration options specific to the network driver being used.
     /// Content varies depending on the network driver (bridge, overlay, etc.).
     #[serde(rename = "DriverOpts")]
     pub driver_opts: Value,
-    
+
     /// Unique identifier of the Docker network.
     ///
     /// Internal network ID used by Docker to identify the network
     /// this container is connected to.
     #[serde(rename = "NetworkID")]
     pub network_id: String,
-    
+
     /// Unique identifier of the network endpoint.
     ///
     /// Internal endpoint ID representing this container's connection
     /// point to the network.
     #[serde(rename = "EndpointID")]
     pub endpoint_id: String,
-    
+
     /// IPv4 gateway address for this network.
     ///
     /// Default route gateway that the container uses to reach
     /// addresses outside this network.
     #[serde(rename = "Gateway")]
     pub gateway: String,
-    
+
     /// IPv4 address assigned to the container on this network.
     ///
     /// Primary IP address used for communication on this network.
     /// Used by other containers and external systems to reach this container.
     #[serde(rename = "IPAddress")]
     pub ipaddress: String,
-    
+
     /// IPv4 subnet prefix length.
     ///
     /// Number of bits in the network portion of the IP address.
     /// Used to determine the network range and subnet mask.
     #[serde(rename = "IPPrefixLen")]
     pub ipprefix_len: i64,
-    
+
     /// IPv6 gateway address for this network.
     ///
     /// Default IPv6 gateway for traffic leaving this network.
     /// Empty string if IPv6 is not configured.
     #[serde(rename = "IPv6Gateway")]
     pub ipv6gateway: String,
-    
+
     /// Global IPv6 address assigned to the container.
     ///
     /// Routable IPv6 address if IPv6 networking is enabled.
     /// Empty string if IPv6 is not configured.
     #[serde(rename = "GlobalIPv6Address")]
     pub global_ipv6address: String,
-    
+
     /// IPv6 subnet prefix length.
     ///
     /// Number of bits in the IPv6 network portion.
     /// Zero if IPv6 is not configured.
     #[serde(rename = "GlobalIPv6PrefixLen")]
     pub global_ipv6prefix_len: i64,
-    
+
     /// DNS names associated with this container on the network.
     ///
     /// Additional DNS names that can be used to resolve to this
@@ -570,7 +570,7 @@ pub struct Mount {
     /// - "tmpfs": Temporary memory-based filesystem
     #[serde(rename = "Type")]
     pub type_field: String,
-    
+
     /// Source path or volume name.
     ///
     /// For bind mounts: absolute path on host filesystem
@@ -578,14 +578,14 @@ pub struct Mount {
     /// For tmpfs: not applicable (empty string)
     #[serde(rename = "Source")]
     pub source: String,
-    
+
     /// Mount destination path inside the container.
     ///
     /// Absolute path where the mount appears within the
     /// container's filesystem namespace.
     #[serde(rename = "Destination")]
     pub destination: String,
-    
+
     /// Access mode string representation.
     ///
     /// Common values:
@@ -594,14 +594,14 @@ pub struct Mount {
     /// - May include additional options
     #[serde(rename = "Mode")]
     pub mode: String,
-    
+
     /// Read-write access flag.
     ///
     /// - `true`: Mount allows write access
     /// - `false`: Mount is read-only
     #[serde(rename = "RW")]
     pub rw: bool,
-    
+
     /// Mount propagation setting.
     ///
     /// Controls how mount events propagate between host and container:
@@ -612,14 +612,14 @@ pub struct Mount {
     /// - "rslave": Recursive slave
     #[serde(rename = "Propagation")]
     pub propagation: String,
-    
+
     /// Optional name for named volumes.
     ///
     /// For volume mounts, this is the name of the Docker volume.
     /// For bind mounts, this field is typically not used.
     #[serde(rename = "Name")]
     pub name: Option<String>,
-    
+
     /// Volume driver name (for volume mounts).
     ///
     /// Specifies the volume driver used for volume mounts.
@@ -683,35 +683,35 @@ pub struct DockerVersion {
     /// including operating system and architecture information.
     #[serde(rename = "Platform")]
     pub platform: Platform,
-    
+
     /// List of Docker components and their versions.
     ///
     /// Includes information about Docker Engine, containerd, runc,
     /// and other components that make up the Docker runtime stack.
     #[serde(rename = "Components")]
     pub components: Vec<Component>,
-    
+
     /// Docker daemon version string.
     ///
     /// The main version identifier for the Docker daemon.
     /// Format typically follows semantic versioning (e.g., "24.0.5").
     #[serde(rename = "Version")]
     pub version: String,
-    
+
     /// Current Docker API version supported.
     ///
     /// The API version that this Docker daemon currently supports.
     /// Used by clients to determine available features and endpoints.
     #[serde(rename = "ApiVersion")]
     pub api_version: String,
-    
+
     /// Minimum Docker API version supported.
     ///
     /// The oldest API version that this Docker daemon still supports.
     /// Critical for backward compatibility with older Docker clients.
     #[serde(rename = "MinAPIVersion")]
     pub min_apiversion: String,
-    
+
     /// Git commit hash of the Docker build.
     ///
     /// Short commit hash identifying the exact source code version
@@ -719,7 +719,7 @@ pub struct DockerVersion {
     /// exact version identification.
     #[serde(rename = "GitCommit")]
     pub git_commit: String,
-    
+
     /// Go language version used to build Docker.
     ///
     /// Version of the Go programming language used to compile
@@ -727,28 +727,28 @@ pub struct DockerVersion {
     /// performance characteristics.
     #[serde(rename = "GoVersion")]
     pub go_version: String,
-    
+
     /// Operating system where Docker is running.
     ///
     /// The host operating system (e.g., "linux", "windows").
     /// Affects available features and container capabilities.
     #[serde(rename = "Os")]
     pub os: String,
-    
+
     /// System architecture where Docker is running.
     ///
     /// The CPU architecture (e.g., "amd64", "arm64", "386").
     /// Determines container image compatibility and performance.
     #[serde(rename = "Arch")]
     pub arch: String,
-    
+
     /// Host kernel version.
     ///
     /// Version of the operating system kernel. Important for
     /// container feature support and security capabilities.
     #[serde(rename = "KernelVersion")]
     pub kernel_version: String,
-    
+
     /// Docker daemon build timestamp.
     ///
     /// When this version of Docker was compiled and built.
@@ -815,14 +815,14 @@ pub struct Component {
     /// Examples: "Engine", "containerd", "runc", "docker-init"
     #[serde(rename = "Name")]
     pub name: String,
-    
+
     /// Version string for this component.
     ///
     /// The specific version of this component in the Docker installation.
     /// May follow different versioning schemes depending on the component.
     #[serde(rename = "Version")]
     pub version: String,
-    
+
     /// Detailed build and version information for this component.
     ///
     /// Contains additional metadata about the component build,
@@ -865,56 +865,56 @@ pub struct Details {
     /// API version they support. Not all components have APIs.
     #[serde(rename = "ApiVersion")]
     pub api_version: Option<String>,
-    
+
     /// Architecture this component was built for.
     ///
     /// CPU architecture (e.g., "amd64", "arm64") that this
     /// component binary targets.
     #[serde(rename = "Arch")]
     pub arch: Option<String>,
-    
+
     /// Timestamp when this component was built.
     ///
     /// ISO 8601 formatted timestamp indicating when this
     /// specific build of the component was created.
     #[serde(rename = "BuildTime")]
     pub build_time: Option<String>,
-    
+
     /// Whether experimental features are enabled.
     ///
     /// Indicates if this component build includes experimental
     /// or preview features. Values typically "true" or "false".
     #[serde(rename = "Experimental")]
     pub experimental: Option<String>,
-    
+
     /// Git commit hash for this component build.
     ///
     /// Short commit hash identifying the exact source code
     /// version used to build this component. Always present.
     #[serde(rename = "GitCommit")]
     pub git_commit: String,
-    
+
     /// Go language version used to build this component.
     ///
     /// Version of Go used for compilation, if the component
     /// is written in Go (most Docker components are).
     #[serde(rename = "GoVersion")]
     pub go_version: Option<String>,
-    
+
     /// Host kernel version (if relevant to this component).
     ///
     /// Operating system kernel version, included for components
     /// that interact closely with kernel features.
     #[serde(rename = "KernelVersion")]
     pub kernel_version: Option<String>,
-    
+
     /// Minimum API version supported (if applicable).
     ///
     /// For API-exposing components, the oldest API version
     /// still supported for backward compatibility.
     #[serde(rename = "MinAPIVersion")]
     pub min_apiversion: Option<String>,
-    
+
     /// Operating system this component was built for.
     ///
     /// Target operating system (e.g., "linux", "windows")
@@ -1303,7 +1303,7 @@ impl DockerClient {
     pub fn get_container_details(
         &mut self,
         container_id: String,
-    ) -> Result<Container, DockerError> {
+    ) -> Result<ContainerExtended, DockerError> {
         let response = self.request_builder.make_request(
             DockerRequestMethod::Get,
             DockerApi::ContainerDetails(container_id),
