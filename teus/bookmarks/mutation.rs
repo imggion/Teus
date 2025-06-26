@@ -31,7 +31,7 @@ impl Service {
     }
 
     /// Get a specific service by ID
-    pub fn get_service_by_id(
+    pub fn _get_service_by_id(
         conn: &mut SqliteConnection,
         service_id: i32,
     ) -> Result<Service, Error> {
