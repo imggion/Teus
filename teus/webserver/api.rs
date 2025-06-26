@@ -1,7 +1,7 @@
 use crate::bookmarks::handlers as bookmark_handlers;
 use crate::config::handlers::get_teus_config;
 use crate::monitor::query;
-use crate::webserver::auth::handlers::{login, signup, JwtConfig};
+use crate::webserver::auth::handlers::{check, login, signup, JwtConfig};
 use crate::webserver::auth::middleware::AuthMiddlewareFactory;
 use crate::webserver::docker::handlers::{
     get_docker_container, get_docker_containers, get_docker_version, get_docker_volume,
@@ -96,6 +96,7 @@ pub async fn start_webserver(config: &Config, storage: Storage) -> std::io::Resu
             .service(
                 web::scope("/api/v1/teus")
                     .wrap(AuthMiddlewareFactory::new(jwt_secret.to_string()))
+                    .service(check) // check for auth
                     .service(sysinfo_handler)
                     .service(systeminfo::get_sysinfo)
                     .service(get_docker_version)
