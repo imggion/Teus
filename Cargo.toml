@@ -45,3 +45,6 @@ lto = true               # Enable link-time optimization
 strip = true             # Strip symbols from binary
 panic = "abort"          # Abort on panic instead of unwinding
 codegen-units = 1        # Reduce parallel code generation units
+
+[target.x86_64-unknown-linux-musl]
+linker = "x86_64-linux-musl-gcc"
