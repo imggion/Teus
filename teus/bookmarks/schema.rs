@@ -39,3 +39,11 @@ pub struct NewServiceSchema {
 // For backwards compatibility if you still need BookmarkService
 pub type BookmarkService = Service;
 pub type ServicePayload = NewServiceSchema;
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServicePatchPayload {
+    pub name: Option<String>,
+    pub link: Option<String>,
+    pub icon: Option<String>,
+}

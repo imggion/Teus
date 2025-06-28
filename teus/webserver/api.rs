@@ -74,7 +74,7 @@ pub async fn start_webserver(config: &Config, storage: Storage) -> std::io::Resu
     HttpServer::new(move || {
         let cors = Cors::default()
             .allow_any_origin()
-            .allowed_methods(vec!["GET", "POST"])
+            .allowed_methods(vec!["GET", "POST", "DELETE", "PATCH"])
             .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
             .allowed_header(http::header::CONTENT_TYPE)
             .max_age(3600);
@@ -105,7 +105,9 @@ pub async fn start_webserver(config: &Config, storage: Storage) -> std::io::Resu
                     .service(get_docker_volume)
                     .service(get_docker_volumes)
                     .service(bookmark_handlers::get_user_services)
-                    .service(bookmark_handlers::add_service),
+                    .service(bookmark_handlers::add_service)
+                    .service(bookmark_handlers::delete_service_by_id)
+                    .service(bookmark_handlers::update_service_by_id),
             )
     })
     .bind(&url)?
