@@ -3,13 +3,13 @@ use crate::{
     monitor::storage::Storage,
     webserver::auth::{middleware::Claims, schema::User},
 };
-use actix_web::{HttpResponse, Responder, post, web};
+use actix_web::{post, web, HttpResponse, Responder};
 use argon2::{
-    Argon2,
     password_hash::{PasswordHash, PasswordVerifier},
+    Argon2,
 };
 use chrono::{Duration, Utc};
-use jsonwebtoken::{EncodingKey, Header, encode};
+use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
 
 /// Request structure for user authentication login endpoint.
@@ -44,7 +44,7 @@ pub struct LoginRequest {
     /// This should be a unique username that exists in the system.
     /// Case-sensitive matching is performed against stored usernames.
     username: String,
-    
+
     /// The user's password in plain text.
     ///
     /// This will be verified against the stored password hash using
@@ -92,7 +92,7 @@ pub struct SignupRequest {
     /// with this username already exists, the registration will fail
     /// with a 409 Conflict status.
     username: String,
-    
+
     /// The password for the new account in plain text.
     ///
     /// This will be securely hashed using Argon2 with a unique salt
@@ -136,14 +136,14 @@ pub struct TokenResponse {
     /// of subsequent API requests as "Bearer {token}". It has a
     /// shorter expiration time for security.
     access: String,
-    
+
     /// JWT refresh token for obtaining new access tokens.
     ///
     /// This token can be used to obtain a new access token when
     /// the current one expires, without requiring the user to
     /// log in again. It has a longer expiration time.
     refresh: String,
-    
+
     /// Time until the access token expires, in seconds.
     ///
     /// Clients should use this value to determine when to refresh
@@ -182,7 +182,7 @@ pub struct JwtConfig {
     /// at least 256 bits (32 characters) long. The same secret
     /// must be used for both token generation and validation.
     pub secret: String,
-    
+
     /// Number of hours until access tokens expire.
     ///
     /// Shorter expiration times improve security by reducing the
@@ -258,7 +258,7 @@ struct NewUserResponse {
     /// This ID is used internally by the system to reference
     /// the user in database relations and API operations.
     id: i32,
-    
+
     /// The username of the newly created account.
     ///
     /// Confirms the username that was successfully registered,
@@ -316,19 +316,16 @@ pub async fn login(
         }
     }
 
-    // Calcola la scadenza per access token
     let access_expiration = Utc::now()
         .checked_add_signed(Duration::hours(jwt_config.expiration_hours))
         .expect("Valid timestamp")
         .timestamp() as usize;
 
-    // Calcola la scadenza per refresh token (più lunga, ad esempio 7 giorni)
     let refresh_expiration = Utc::now()
         .checked_add_signed(Duration::hours(24 * 7)) // 7 days
         .expect("Valid timestamp")
         .timestamp() as usize;
 
-    // Crea i claims per access token
     let access_claims = Claims {
         sub: login_data.username.clone(),
         exp: access_expiration,
@@ -336,7 +333,6 @@ pub async fn login(
         id: user_id,
     };
 
-    // Crea i claims per refresh token
     let refresh_claims = Claims {
         sub: login_data.username.clone(),
         exp: refresh_expiration,
@@ -344,7 +340,6 @@ pub async fn login(
         id: user_id,
     };
 
-    // Genera l'access token
     let access_token = encode(
         &Header::default(),
         &access_claims,
@@ -352,7 +347,6 @@ pub async fn login(
     )
     .unwrap();
 
-    // Genera il refresh token
     let refresh_token = encode(
         &Header::default(),
         &refresh_claims,
@@ -360,7 +354,6 @@ pub async fn login(
     )
     .unwrap();
 
-    // Restituisci i token
     let response = TokenResponse {
         access: access_token,
         refresh: refresh_token,
@@ -395,4 +388,10 @@ pub async fn signup(
     };
 
     HttpResponse::Created().json(user_response)
+}
+
+// TODO: Move this `health` somewhere else
+#[post("/check")]
+pub async fn check() -> impl Responder {
+    HttpResponse::Ok()
 }

@@ -17,6 +17,11 @@ use std::{
     rc::Rc,
 };
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+struct NotAuth {
+    message: String
+}
+
 /// JWT claims structure containing user authentication information.
 ///
 /// This structure represents the payload of a JSON Web Token (JWT) used
@@ -59,19 +64,19 @@ pub struct Claims {
     /// This field identifies which user the token belongs to and
     /// corresponds to the username stored in the database.
     pub sub: String,
-    
+
     /// Expiration time as a Unix timestamp.
     ///
     /// Tokens should be rejected if the current time is after
     /// this timestamp. This prevents indefinite token reuse.
     pub exp: usize,
-    
+
     /// Issued at time as a Unix timestamp.
     ///
     /// Records when the token was created, useful for token
     /// lifecycle management and security auditing.
     pub iat: usize,
-    
+
     /// Numeric user ID from the database.
     ///
     /// This provides a direct reference to the user record
@@ -157,7 +162,7 @@ impl AuthMiddlewareFactory {
 pub struct AuthMiddleware<S> {
     /// The wrapped service to call after successful authentication.
     service: Rc<S>,
-    
+
     /// The JWT secret key for token validation.
     jwt_secret: String,
 }
