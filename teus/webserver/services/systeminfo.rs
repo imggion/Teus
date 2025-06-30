@@ -1,5 +1,5 @@
 use crate::webserver::models::sysmodels::{GenericSysInfoResponse, IpInfo, MACInfo};
-use actix_web::{HttpResponse, Responder, get};
+use actix_web::{get, HttpResponse, Responder};
 use sysinfo::{Networks, System};
 
 fn collect_network_info() -> Vec<IpInfo> {
