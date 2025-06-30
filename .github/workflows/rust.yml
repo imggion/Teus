@@ -9,7 +9,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  ci:
+  teus-build-checks:
     runs-on: ubuntu-latest
     steps:
       # 1. Checkout the repository code
