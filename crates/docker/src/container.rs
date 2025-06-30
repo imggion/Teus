@@ -6,14 +6,14 @@ use serde_json::Value;
 pub struct ContainerExtended {
     #[serde(rename = "Id")]
     pub id: String,
-    #[serde(rename = "Created")]
-    pub created: String,
+    #[serde(rename = "Created", default)]
+    pub created: Option<String>,
     #[serde(rename = "Path")]
     pub path: String,
     #[serde(rename = "Args")]
     pub args: Vec<String>,
-    #[serde(rename = "State")]
-    pub state: State,
+    #[serde(rename = "State", default)]
+    pub state: Option<State>, // opt this
     #[serde(rename = "Image")]
     pub image: String,
     #[serde(rename = "ResolvConfPath")]
@@ -22,8 +22,8 @@ pub struct ContainerExtended {
     pub hostname_path: String,
     #[serde(rename = "HostsPath")]
     pub hosts_path: String,
-    #[serde(rename = "LogPath")]
-    pub log_path: String,
+    #[serde(rename = "LogPath", default)]
+    pub log_path: Option<String>,
     #[serde(rename = "Name")]
     pub name: String,
     #[serde(rename = "RestartCount")]
@@ -33,7 +33,7 @@ pub struct ContainerExtended {
     #[serde(rename = "Platform")]
     pub platform: String,
     #[serde(rename = "ImageManifestDescriptor", default)]
-    pub image_manifest_descriptor: Option<ImageManifestDescriptor>,
+    pub image_manifest_descriptor: Option<ImageManifestDescriptor>, // opt this (inside)
     #[serde(rename = "MountLabel")]
     pub mount_label: String,
     #[serde(rename = "ProcessLabel")]
@@ -43,7 +43,7 @@ pub struct ContainerExtended {
     #[serde(rename = "ExecIDs")]
     pub exec_ids: Option<Vec<String>>,
     #[serde(rename = "HostConfig")]
-    pub host_config: HostConfig,
+    pub host_config: HostConfig, // opt this (inside)
     #[serde(rename = "GraphDriver")]
     pub graph_driver: GraphDriver,
     #[serde(rename = "SizeRw")]

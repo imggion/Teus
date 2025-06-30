@@ -1,5 +1,5 @@
 use crate::{
-    container::ContainerExtended,
+    container::ContainerInspectResponse,
     requests::{DockerApi, DockerRequestMethod, TeusRequestBuilder},
 };
 use serde::{Deserialize, Serialize};
@@ -1305,7 +1305,7 @@ impl DockerClient {
     pub fn get_container_details(
         &mut self,
         container_id: String,
-    ) -> Result<ContainerExtended, DockerError> {
+    ) -> Result<ContainerInspectResponse, DockerError> {
         let response = self.request_builder.make_request(
             DockerRequestMethod::Get,
             DockerApi::ContainerDetails(container_id),
