@@ -1,9 +1,4 @@
-mod bookmarks;
-mod config;
-mod monitor;
-mod schema;
-mod utils;
-mod webserver;
+use teus::{config, monitor, webserver};
 
 use monitor::sys::SysInfo;
 use std::{
