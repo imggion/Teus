@@ -1,9 +1,9 @@
+mod bookmarks;
 mod config;
 mod monitor;
 mod schema;
 mod utils;
 mod webserver;
-mod bookmarks;
 
 use monitor::sys::SysInfo;
 use std::{
@@ -11,8 +11,8 @@ use std::{
     path::Path,
     process,
     sync::{
-        Arc,
         atomic::{AtomicBool, Ordering},
+        Arc,
     },
     thread,
 };

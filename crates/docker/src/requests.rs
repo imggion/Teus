@@ -21,7 +21,9 @@ impl DockerApi {
             DockerApi::Version => "version".to_string(),
             DockerApi::Info => "info".to_string(),
             DockerApi::Containers => "containers/json".to_string(),
-            DockerApi::ContainerDetails(container_id) => format!("containers/{}/json", container_id),
+            DockerApi::ContainerDetails(container_id) => {
+                format!("containers/{}/json", container_id)
+            }
             DockerApi::Volumes => "volumes".to_string(),
             DockerApi::Images => "images".to_string(),
             DockerApi::Networks => "networks".to_string(),
@@ -79,7 +81,12 @@ impl TeusRequestBuilder {
     }
 
     #[inline]
-    fn format_url_request(&self, method: DockerRequestMethod, api: DockerApi, query: Option<String>) -> String {
+    fn format_url_request(
+        &self,
+        method: DockerRequestMethod,
+        api: DockerApi,
+        query: Option<String>,
+    ) -> String {
         let query_str = query.map(|q| format!("?{}", q)).unwrap_or_default();
         println!("QUERY STR: {}", query_str);
         format!(
@@ -201,7 +208,8 @@ mod tests {
     #[test]
     fn builds_delete_request_correctly() {
         let builder = _setup_builder();
-        let delete = builder.format_url_request(DockerRequestMethod::Delete, DockerApi::Version, None);
+        let delete =
+            builder.format_url_request(DockerRequestMethod::Delete, DockerApi::Version, None);
         assert_eq!(
             delete,
             "DELETE /version HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n"

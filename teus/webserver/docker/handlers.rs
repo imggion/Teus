@@ -15,7 +15,6 @@ struct ContainersQuery {
     all: Option<bool>,
 }
 
-
 #[get("/docker/version")]
 async fn get_docker_version() -> impl Responder {
     let mut docker_client = DockerClient::new(None);

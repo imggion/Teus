@@ -1,3 +1,3 @@
-pub mod schema;
-pub mod mutation;
 pub mod handlers;
+pub mod mutation;
+pub mod schema;

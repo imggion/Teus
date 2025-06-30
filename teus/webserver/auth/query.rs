@@ -1,4 +1,4 @@
-use super::schema::{User};
+use super::schema::User;
 use diesel::{prelude::*, result::Error};
 
 impl User {

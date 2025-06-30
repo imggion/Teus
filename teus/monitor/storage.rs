@@ -1,8 +1,8 @@
-use diesel::{Connection as ConnectionDiesel, SqliteConnection};
 use diesel::connection::SimpleConnection; // Added
+use diesel::{Connection as ConnectionDiesel, SqliteConnection};
+use std::error::Error;
 use std::path::Path;
-use std::sync::{Arc, Mutex};
-use std::error::Error; // Added for Box<dyn Error>
+use std::sync::{Arc, Mutex}; // Added for Box<dyn Error>
 
 // Removed: use rusqlite::{Connection, Result};
 // Removed: use std::time::Duration;
@@ -21,7 +21,7 @@ mod storage_utils {
         if !dir_path.exists() {
             fs::create_dir_all(dir_path)?;
             // Consider using log crate for messages instead of println!
-            // println!("Directory '{}' created.", path); 
+            // println!("Directory '{}' created.", path);
         }
         Ok(())
     }
@@ -29,7 +29,8 @@ mod storage_utils {
 
 // TODO: Migrate Connection -> SqliteConnection // This TODO can be removed after this refactor
 impl Storage {
-    pub fn new(db_path: &str) -> Result<Self, Box<dyn Error>> { // Changed return type
+    pub fn new(db_path: &str) -> Result<Self, Box<dyn Error>> {
+        // Changed return type
         if let Some(parent) = Path::new(db_path).parent() {
             if let Some(parent_str) = parent.to_str() {
                 storage_utils::ensure_directory_exists(parent_str)?; // Changed from expect
@@ -42,7 +43,9 @@ impl Storage {
 
         // Apply PRAGMAs to Diesel connection
         // Note: busy_timeout is set in milliseconds for SQLite PRAGMA
-        conn_new.batch_execute("PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA busy_timeout = 5000;")?;
+        conn_new.batch_execute(
+            "PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA busy_timeout = 5000;",
+        )?;
 
         Ok(Self {
             diesel_conn: Arc::new(Mutex::new(conn_new)),
@@ -67,13 +70,13 @@ mod tests {
         assert!(storage.is_ok());
 
         let storage = storage.unwrap();
-        
+
         // Test that we can acquire the mutex lock
         let conn_guard = storage.diesel_conn.lock();
         assert!(conn_guard.is_ok());
     }
 
-    #[test] 
+    #[test]
     fn test_storage_creates_parent_directory() {
         let temp_dir = TempDir::new().expect("Failed to create temp dir");
         let nested_path = temp_dir.path().join("nested").join("path").join("test.db");
@@ -91,7 +94,7 @@ mod tests {
         // SQLite in-memory database
         let storage = Storage::new(":memory:");
         assert!(storage.is_ok());
-        
+
         let storage = storage.unwrap();
         let conn_guard = storage.diesel_conn.lock();
         assert!(conn_guard.is_ok());
@@ -103,7 +106,7 @@ mod tests {
         // This might not fail on all systems, but it's worth testing
         let invalid_path = "/invalid/path/that/should/not/exist/test.db";
         let storage = Storage::new(invalid_path);
-        
+
         // On most systems this should fail due to permission issues
         // But SQLite might create the path in some cases, so we just ensure it returns a Result
         match storage {
@@ -154,10 +157,10 @@ mod tests {
 
         // Give the thread a moment to start
         thread::sleep(Duration::from_millis(5));
-        
+
         // This should be able to access after the thread releases the lock
         handle.join().expect("Thread panicked");
-        
+
         let conn = storage.diesel_conn.lock();
         assert!(conn.is_ok());
     }
@@ -188,7 +191,7 @@ mod tests {
     fn test_storage_utils_invalid_path() {
         // Try to create a directory in an invalid location
         let result = storage_utils::ensure_directory_exists("/root/invalid/path");
-        
+
         // This should fail on most systems due to permission issues
         match result {
             Ok(_) => {

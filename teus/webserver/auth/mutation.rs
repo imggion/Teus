@@ -1,6 +1,6 @@
 use super::schema::User;
-use argon2::password_hash::SaltString;
 use argon2::password_hash::rand_core::OsRng;
+use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHasher};
 use diesel::result::Error;
 use diesel::{RunQueryDsl, SqliteConnection};
@@ -15,10 +15,10 @@ impl User {
 
         // Get a random salt for the password
         let salt = SaltString::generate(&mut OsRng);
-        
+
         // Create an Argon2 instance with default parameters
         let argon2 = Argon2::default();
-        
+
         // Generate the password hash as a string
         let password_hash = argon2
             .hash_password(password.as_bytes(), &salt)

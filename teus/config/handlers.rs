@@ -5,13 +5,11 @@ use crate::{
     },
     monitor::storage::Storage,
 };
-use actix_web::{get, web, Error, HttpResponse};
 use actix_web::error::ErrorInternalServerError;
+use actix_web::{get, web, Error, HttpResponse};
 
 #[get("/teus-config")]
-pub async fn get_teus_config(
-    config: web::Data<Config>,
-) -> Result<HttpResponse, Error> {
+pub async fn get_teus_config(config: web::Data<Config>) -> Result<HttpResponse, Error> {
     let storage = Storage::new(&config.database.path).map_err(|e| {
         eprintln!("Failed to initialize storage: {:?}", e); // TODO: Use log::error!
         ErrorInternalServerError("Failed to initialize storage")
@@ -33,11 +31,12 @@ pub async fn get_teus_config(
 }
 
 #[get("/teus-config/first-visit")]
-pub async fn is_first_visit(
-    config: web::Data<Config>,
-) -> Result<HttpResponse, Error> {
+pub async fn is_first_visit(config: web::Data<Config>) -> Result<HttpResponse, Error> {
     let storage = Storage::new(&config.database.path).map_err(|e| {
-        eprintln!("Failed to initialize storage for first-visit check: {:?}", e); // TODO: Use log::error!
+        eprintln!(
+            "Failed to initialize storage for first-visit check: {:?}",
+            e
+        ); // TODO: Use log::error!
         ErrorInternalServerError("Failed to initialize storage")
     })?;
     let mut conn = storage.diesel_conn.lock().map_err(|_| {

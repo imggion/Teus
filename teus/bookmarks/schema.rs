@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use diesel::prelude::*;
+use serde::{Deserialize, Serialize};
 
 #[allow(dead_code)]
 pub type Bookmarks = Vec<Service>;

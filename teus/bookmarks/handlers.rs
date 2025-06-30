@@ -1,4 +1,4 @@
-use crate::bookmarks::schema::{NewService, Service, ServicePayload, ServicePatchPayload};
+use crate::bookmarks::schema::{NewService, Service, ServicePatchPayload, ServicePayload};
 use crate::config::types::Config;
 use crate::monitor::storage::Storage;
 use crate::webserver::auth::middleware::Claims;
@@ -90,7 +90,7 @@ pub async fn delete_service_by_id(
                     "message": "You are not authorized to delete this service"
                 }));
             }
-            
+
             match Service::delete_service(&mut conn, bookmark_id, user_id) {
                 Ok(rows_affected) => {
                     if rows_affected > 0 {
@@ -100,12 +100,12 @@ pub async fn delete_service_by_id(
                             "message": "Unexpected error during deletion"
                         }))
                     }
-                },
+                }
                 Err(_) => HttpResponse::InternalServerError().json(serde_json::json!({
                     "message": "Error deleting bookmark"
                 })),
             }
-        },
+        }
         Err(_) => {
             // Service doesn't exist
             HttpResponse::NotFound().json(serde_json::json!({
@@ -136,18 +136,17 @@ pub async fn update_service_by_id(
                     "message": "You are not authorized to update this service"
                 }));
             }
-            
-            match Service::patch_service(&mut conn, bookmark_id, user_id, service_data.into_inner()) {
+
+            match Service::patch_service(&mut conn, bookmark_id, user_id, service_data.into_inner())
+            {
                 Ok(service) => HttpResponse::Ok().json(service),
                 Err(_) => HttpResponse::InternalServerError().json(serde_json::json!({
                     "message": "Error updating bookmark"
                 })),
             }
-        },
-        Err(_) => {
-            HttpResponse::NotFound().json(serde_json::json!({
-                "message": "Service not found"
-            }))
         }
+        Err(_) => HttpResponse::NotFound().json(serde_json::json!({
+            "message": "Service not found"
+        })),
     }
 }

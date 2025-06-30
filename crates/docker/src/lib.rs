@@ -1,12 +1,11 @@
+mod container;
 pub mod docker;
 pub mod requests;
-mod container;
 
 #[cfg(test)]
 mod tests {
     use std::io::{Read, Write};
     use std::os::unix::net::UnixStream;
-
 
     // Replace with your actual Docker socket path
     // const DOCKER_SOCKET_PATH: &str = "/var/run/docker.sock"; // Standard Linux
@@ -18,8 +17,7 @@ mod tests {
 
     #[test]
     fn docker_sock_connection() {
-        let docker_sock =
-            UnixStream::connect(DOCKER_SOCKET_PATH).unwrap();
+        let docker_sock = UnixStream::connect(DOCKER_SOCKET_PATH).unwrap();
 
         println!("{:?}", docker_sock);
     }

@@ -70,7 +70,6 @@ impl Service {
         user_query_id: i32,
         patch_data: ServicePatchPayload,
     ) -> Result<Service, Error> {
-
         let current_service = Self::_get_service_by_id(conn, service_id)?;
         let updated_service = NewService {
             name: patch_data.name.unwrap_or(current_service.name),

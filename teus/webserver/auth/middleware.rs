@@ -5,21 +5,21 @@
 //! from the Authorization header, making user claims available to handlers.
 
 use actix_web::{
-    Error, HttpMessage,
-    dev::{Service, ServiceRequest, ServiceResponse, Transform, forward_ready},
+    dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
     error::ErrorUnauthorized,
+    Error, HttpMessage,
 };
-use jsonwebtoken::{Algorithm, DecodingKey, Validation, decode};
+use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 use std::{
-    future::{Future, Ready, ready},
+    future::{ready, Future, Ready},
     pin::Pin,
     rc::Rc,
 };
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct NotAuth {
-    message: String
+    message: String,
 }
 
 /// JWT claims structure containing user authentication information.

@@ -1,5 +1,5 @@
-pub mod middleware;
 pub mod handlers;
-pub mod schema;
-pub mod query;
+pub mod middleware;
 pub mod mutation;
+pub mod query;
+pub mod schema;

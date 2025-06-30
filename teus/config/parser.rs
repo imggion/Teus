@@ -33,7 +33,8 @@ path = "./test.db"
 
 [monitor]
 interval_secs = 60
-"#.to_string()
+"#
+        .to_string()
     }
 
     #[test]
@@ -41,10 +42,10 @@ interval_secs = 60
         let temp_file = NamedTempFile::new().expect("Failed to create temp file");
         let config_content = create_test_config_content();
         fs::write(temp_file.path(), config_content).expect("Failed to write config");
-        
+
         let result = load_config(temp_file.path());
         assert!(result.is_ok());
-        
+
         let config = result.unwrap();
         assert_eq!(config.server.host, "127.0.0.1");
         assert_eq!(config.server.port, 8080);
@@ -64,7 +65,7 @@ interval_secs = 60
         let temp_file = NamedTempFile::new().expect("Failed to create temp file");
         let invalid_content = "invalid toml content [[[";
         fs::write(temp_file.path(), invalid_content).expect("Failed to write invalid config");
-        
+
         let result = load_config(temp_file.path());
         assert!(result.is_err());
     }
@@ -78,7 +79,7 @@ host = "127.0.0.1"
 # Missing port, secret, environment
 "#;
         fs::write(temp_file.path(), incomplete_content).expect("Failed to write incomplete config");
-        
+
         let result = load_config(temp_file.path());
         assert!(result.is_err());
     }
@@ -100,10 +101,10 @@ path = "/var/lib/teus/teus.db"
 interval_secs = 30
 "#;
         fs::write(temp_file.path(), config_content).expect("Failed to write config");
-        
+
         let result = load_config(temp_file.path());
         assert!(result.is_ok());
-        
+
         let config = result.unwrap();
         assert_eq!(config.server.host, "0.0.0.0");
         assert_eq!(config.server.port, 3000);
