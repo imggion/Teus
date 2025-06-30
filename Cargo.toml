@@ -1,6 +1,7 @@
 [workspace]
 # This file is part of the Teus project.
-members = ["crates/docker", "crates/sysd"]
+members = ["crates/docker"]
+# members = ["crates/docker", "crates/sysd"] # add this when sysd is in developing state
 default-members = ["."]
 
 [package]
