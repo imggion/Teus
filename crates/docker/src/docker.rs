@@ -1249,7 +1249,6 @@ pub struct DockerClient {
 //     all: Option<bool>,
 // }
 
-
 impl DockerClient {
     /// Creates a new DockerClient.
     ///
