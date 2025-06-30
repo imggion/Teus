@@ -52,18 +52,18 @@ pub struct IpInfo {
     /// This identifies which physical or virtual network adapter
     /// the IP address is assigned to. Common interface names include:
     /// - "eth0", "eth1": Ethernet interfaces
-    /// - "wlan0", "wlan1": Wireless interfaces  
+    /// - "wlan0", "wlan1": Wireless interfaces
     /// - "lo": Loopback interface
     /// - "docker0": Docker bridge interface
     pub interface: String,
-    
+
     /// The IP address in string format.
     ///
     /// Can be either IPv4 (e.g., "192.168.1.100") or IPv6 format.
     /// The address represents the current network configuration
     /// for this interface.
     pub addr: String,
-    
+
     /// The subnet prefix length (CIDR notation).
     ///
     /// Indicates the number of bits used for the network portion
@@ -114,7 +114,7 @@ pub struct MACInfo {
     /// allowing clients to correlate IP and MAC address information
     /// for each network adapter.
     pub interface: String,
-    
+
     /// The MAC address in colon-separated hexadecimal format.
     ///
     /// Standard format is six groups of two hexadecimal digits
@@ -180,7 +180,7 @@ pub struct GenericSysInfoResponse {
     /// on the network. Used for system identification and
     /// network management purposes.
     pub hostname: String,
-    
+
     /// The operating system name and version.
     ///
     /// Provides detailed OS information including distribution
@@ -189,35 +189,35 @@ pub struct GenericSysInfoResponse {
     /// - "CentOS Linux 8.4.2105"
     /// - "Windows Server 2019"
     pub os: String,
-    
+
     /// Human-readable system uptime information.
     ///
     /// Indicates how long the system has been running since
     /// the last boot. Format may vary but typically includes
     /// days, hours, minutes, and seconds.
     pub uptime: String,
-    
+
     /// The kernel version string.
     ///
     /// Provides the version of the operating system kernel.
     /// Important for compatibility checking and security
     /// vulnerability assessment.
     pub kernel_version: String,
-    
+
     /// The primary IPv4 address of the system.
     ///
     /// This is typically the main network address used for
     /// external communication. Useful for quick identification
     /// and network connectivity verification.
     pub ipv4: String,
-    
+
     /// Detailed information about all network interfaces.
     ///
     /// Contains IP address configuration for each network
     /// interface on the system, including physical and
     /// virtual interfaces.
     pub networks: Vec<IpInfo>,
-    
+
     /// MAC address information for all network interfaces.
     ///
     /// Provides hardware identifiers for network interfaces,
@@ -303,42 +303,42 @@ pub struct SysInfoResponse {
     /// Typically in RFC3339 format (e.g., "2024-01-15T10:30:00Z").
     /// Essential for time-series analysis and determining data freshness.
     pub timestamp: String,
-    
+
     /// Current CPU usage as a percentage (0.0 to 100.0).
     ///
     /// Represents the overall CPU utilization across all cores
     /// and threads. Values approaching 100% indicate high
     /// computational load that may affect system responsiveness.
     pub cpu_usage: f32,
-    
+
     /// Current RAM usage in megabytes.
     ///
     /// This represents the amount of physical memory currently
     /// allocated to running processes, excluding cached and
     /// buffered memory that can be quickly reclaimed.
     pub ram_usage: f32,
-    
+
     /// Total available RAM in the system, in megabytes.
     ///
     /// This is the total physical memory capacity and should
     /// remain constant unless hardware changes occur. Used
     /// to calculate usage percentages and available capacity.
     pub total_ram: f32,
-    
+
     /// Amount of RAM currently free and immediately available, in megabytes.
     ///
     /// This represents memory that can be immediately allocated
     /// to new processes without requiring swap operations or
     /// cache eviction. Critical for assessing memory pressure.
     pub free_ram: f32,
-    
+
     /// Current swap space usage in megabytes.
     ///
     /// High swap usage may indicate memory pressure and can
     /// significantly impact system performance. Values should
     /// typically remain low in well-configured systems.
     pub used_swap: f32,
-    
+
     /// Storage utilization information for all mounted filesystems.
     ///
     /// Provides detailed disk usage data for each storage device
@@ -409,7 +409,7 @@ pub struct DiskInfoResponse {
     /// on this storage device. Important for understanding
     /// performance characteristics and supported features.
     pub filesystem: String,
-    
+
     /// The mount point or drive path where the filesystem is accessible.
     ///
     /// Examples:
@@ -419,21 +419,21 @@ pub struct DiskInfoResponse {
     /// - "C:" - Windows system drive
     /// - "/mnt/data" - Mounted data drive
     pub mount_point: String,
-    
+
     /// Total storage capacity in megabytes.
     ///
     /// This represents the complete size of the filesystem,
     /// including space used by the filesystem metadata and
     /// any reserved blocks. Used for capacity planning calculations.
     pub total_space: i32,
-    
+
     /// Currently available space for new data, in megabytes.
     ///
     /// This is the space that can be immediately used for new
     /// files and directories. May be less than (total - used)
     /// due to filesystem reservations and overhead.
     pub available_space: i32,
-    
+
     /// Currently used storage space in megabytes.
     ///
     /// Represents the space occupied by files, directories,
@@ -524,12 +524,10 @@ mod tests {
             },
         ];
 
-        let mac_addresses = vec![
-            MACInfo {
-                interface: "eth0".to_string(),
-                mac: "aa:bb:cc:dd:ee:ff".to_string(),
-            },
-        ];
+        let mac_addresses = vec![MACInfo {
+            interface: "eth0".to_string(),
+            mac: "aa:bb:cc:dd:ee:ff".to_string(),
+        }];
 
         let sys_info = GenericSysInfoResponse {
             hostname: "test-machine".to_string(),
