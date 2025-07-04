@@ -31,6 +31,45 @@ check_cmd() {
     command -v "$1" >/dev/null 2>&1 || { error "Required command '$1' not found. Please install it first."; }
 }
 
+# Function to compare version numbers
+version_compare() {
+    local version1="$1"
+    local version2="$2"
+    local op="$3"
+    
+    # Convert version strings to arrays
+    IFS='.' read -ra ver1 <<< "$version1"
+    IFS='.' read -ra ver2 <<< "$version2"
+    
+    # Pad arrays to same length
+    local max_len=${#ver1[@]}
+    if [ ${#ver2[@]} -gt $max_len ]; then
+        max_len=${#ver2[@]}
+    fi
+    
+    while [ ${#ver1[@]} -lt $max_len ]; do
+        ver1+=("0")
+    done
+    while [ ${#ver2[@]} -lt $max_len ]; do
+        ver2+=("0")
+    done
+    
+    # Compare version components
+    for ((i=0; i<max_len; i++)); do
+        if [ "${ver1[i]}" -gt "${ver2[i]}" ]; then
+            [ "$op" = "ge" ] || [ "$op" = "gt" ] && return 0
+            [ "$op" = "lt" ] || [ "$op" = "le" ] || [ "$op" = "eq" ] && return 1
+        elif [ "${ver1[i]}" -lt "${ver2[i]}" ]; then
+            [ "$op" = "lt" ] || [ "$op" = "le" ] && return 0
+            [ "$op" = "gt" ] || [ "$op" = "ge" ] || [ "$op" = "eq" ] && return 1
+        fi
+    done
+    
+    # Versions are equal
+    [ "$op" = "eq" ] || [ "$op" = "ge" ] || [ "$op" = "le" ] && return 0
+    return 1
+}
+
 # Banner
 echo -e "${BLUE}========================================"
 echo -e "       TEUS Installation Script"
@@ -95,6 +134,52 @@ if [ -n "$MISSING" ]; then
     else
         error "Dependencies are required for installation. Exiting."
     fi
+fi
+
+# Rust and Cargo version checks
+info "Checking Rust and Cargo installation..."
+MINIMUM_RUST_VERSION="1.86.0"
+
+# Check if Rust is installed
+if ! command -v rustc >/dev/null 2>&1; then
+    error "Rust is not installed. Please install Rust from https://rustup.rs/ and try again."
+fi
+
+# Check if Cargo is installed
+if ! command -v cargo >/dev/null 2>&1; then
+    error "Cargo is not installed. Please install Rust (which includes Cargo) from https://rustup.rs/ and try again."
+fi
+
+# Get Rust version
+RUST_VERSION=$(rustc --version | awk '{print $2}')
+info "Found Rust version: $RUST_VERSION"
+
+# Check if Rust version meets minimum requirement
+if ! version_compare "$RUST_VERSION" "$MINIMUM_RUST_VERSION" "ge"; then
+    error "Rust version $RUST_VERSION is too old. Minimum required version is $MINIMUM_RUST_VERSION. Please update Rust using 'rustup update' and try again."
+fi
+
+success "Rust version check passed."
+
+# Check for Diesel CLI
+info "Checking Diesel CLI installation..."
+if ! command -v diesel >/dev/null 2>&1; then
+    warning "Diesel CLI is not installed."
+    read -rp "Do you want to install Diesel CLI? [Y/n] " install_diesel
+    install_diesel=${install_diesel:-Y}
+    
+    if [[ $install_diesel =~ ^[Yy]$ ]]; then
+        info "Installing Diesel CLI..."
+        if cargo install diesel_cli --no-default-features --features sqlite; then
+            success "Diesel CLI installed successfully."
+        else
+            error "Failed to install Diesel CLI. Please install it manually with: cargo install diesel_cli --no-default-features --features sqlite"
+        fi
+    else
+        error "Diesel CLI is required for database migrations. Please install it manually with: cargo install diesel_cli --no-default-features --features sqlite"
+    fi
+else
+    success "Diesel CLI is already installed."
 fi
 
 # Name of the generated executable (modify if necessary)
@@ -177,16 +262,22 @@ sudo mkdir -p /var/lib/teus || error "Failed to create directory /var/lib/teus"
 sudo chown -R teus:teus /var/lib/teus || error "Failed to set initial ownership for /var/lib/teus"
 success "Database directory setup complete for initial ownership."
 
-# Run migrations
+# Run migrations with improved error handling
 info "Running database migrations..."
 echo "DATABASE_URL=/var/lib/teus/sysinfo.db" > .env
+
+# Verify diesel is available before running migrations
+if ! command -v diesel >/dev/null 2>&1; then
+    error "Diesel CLI is not available. Cannot run database migrations. Please install Diesel CLI and try again."
+fi
+
 if diesel migration run; then
     success "Migrations completed successfully."
     info "Setting final ownership for /var/lib/teus after migrations..."
     sudo chown -R teus:teus /var/lib/teus || error "Failed to set final ownership for /var/lib/teus"
     success "Final ownership set."
 else
-    error "Database migrations failed."
+    error "Database migrations failed. Please check that Diesel CLI is properly installed and the database directory is accessible."
 fi
 
 info "Cleaning up temporary .env file..."
