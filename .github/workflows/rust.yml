@@ -1,0 +1,53 @@
+name: Rust Teus CI
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  teus-build-checks:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout the repository code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. toolchain
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      # 3. cache
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      # 4. formatting
+      - name: Check formatting
+        run: cargo fmt -- --check
+
+      # 5. clippy (is it necessary?)
+      - name: Run Clippy
+        run: cargo clippy -- -D warnings
+
+      # 6. tests
+      - name: Run tests
+        run: cargo test --verbose
+
+      # 7. release
+      - name: Build in release mode
+        run: cargo build --verbose --release
