@@ -5,7 +5,8 @@ use diesel::{RunQueryDsl, SqliteConnection};
 
 impl TeusConfig {
     pub fn set_first_visit(conn: &mut SqliteConnection, is_first_visit: bool) -> Result<(), Error> {
-        use crate::schema::config::dsl::*;
+        use teus_schema::schema::config::dsl::*;
+        // use crate::schema::config::dsl::*;
 
         // Get the first config record
         let teus_config = config

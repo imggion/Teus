@@ -4,7 +4,8 @@ use diesel::result::Error;
 
 impl TeusConfig {
     pub fn is_first_visit(conn: &mut SqliteConnection) -> Result<bool, Error> {
-        use crate::schema::config::dsl::*;
+        // use crate::schema::config::dsl::*;
+        use teus_schema::schema::config::dsl::*;
 
         config.select(first_visit).first(conn)
     }
@@ -12,7 +13,7 @@ impl TeusConfig {
     pub fn get_teus_server_config(
         conn: &mut SqliteConnection,
     ) -> Result<Option<TeusConfig>, Error> {
-        use crate::schema::config::dsl::*;
+        use teus_schema::schema::config::dsl::*;
 
         let latest_teusconfig_option = config
             .select(TeusConfig::as_select())

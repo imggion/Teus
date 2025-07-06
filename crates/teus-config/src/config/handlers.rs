@@ -1,11 +1,10 @@
-use crate::{
-    config::{schema},
-    monitor::storage::Storage,
-};
-use teus_types::config::{Config, IsFirstVisitResponse};
+use crate::config::schema;
 use actix_web::error::ErrorInternalServerError;
-use actix_web::{get, web, Error, HttpResponse};
+use actix_web::{Error, HttpResponse, get, web};
+use teus_database::storage::Storage;
+use teus_types::config::{Config, IsFirstVisitResponse};
 
+/* is this really useful? */
 #[get("/teus-config")]
 pub async fn get_teus_config(config: web::Data<Config>) -> Result<HttpResponse, Error> {
     let storage = Storage::new(&config.database.path).map_err(|e| {
