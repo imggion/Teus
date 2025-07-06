@@ -173,6 +173,10 @@ if ! command -v diesel >/dev/null 2>&1; then
         if cargo install diesel_cli --no-default-features --features sqlite; then
             success "Diesel CLI installed successfully."
         else
+            # fallback installer to ensure diesel installation
+            if curl --proto '=https' --tlsv1.2 -LsSf https://github.com/diesel-rs/diesel/releases/latest/download/diesel_cli-installer.sh | sh; then
+                success "Diesel CLI installed successfully. "
+            fi
             error "Failed to install Diesel CLI. Please install it manually with: cargo install diesel_cli --no-default-features --features sqlite"
         fi
     else
