@@ -1,7 +1,17 @@
 [workspace]
 # This file is part of the Teus project.
-members = ["crates/docker"]
-# members = ["crates/docker", "crates/sysd"] # add this when sysd is in developing state
+members = [
+    "crates/teus-types",
+    "crates/docker",
+    "crates/teus-config",
+    "crates/teus-schema",
+    "crates/teus-database",
+    "crates/teus-monitor",
+    "crates/teus-auth",
+    "crates/teus-docker",
+    "crates/teus-api",
+    "crates/teus-services",
+]
 default-members = ["."]
 
 [package]
@@ -19,8 +29,16 @@ name = "teus"
 path = "./teus/main.rs"
 
 [dependencies] # we need to clean something here
-docker = { path = "crates/docker"}
-diesel = { version = "2.2.0", features = ["sqlite", "returning_clauses_for_sqlite_3_35"] }
+docker = { path = "crates/docker" }
+teus-types = { path = "crates/teus-types" }
+teus-config = { path = "crates/teus-config" }
+teus-database = { path = "crates/teus-database" }
+teus-api = { path = "crates/teus-api" }
+teus-monitor = { path = "crates/teus-monitor" }
+diesel = { version = "2.2.0", features = [
+    "sqlite",
+    "returning_clauses_for_sqlite_3_35",
+] }
 dotenvy = "0.15"
 actix-cors = "0.7.0"
 actix-web = "4.9.0"
@@ -41,11 +59,11 @@ tempfile = "3.8"
 tokio-test = "0.4"
 
 [profile.release]
-opt-level = "z"          # Optimize for size
-lto = true               # Enable link-time optimization
-strip = true             # Strip symbols from binary
-panic = "abort"          # Abort on panic instead of unwinding
-codegen-units = 1        # Reduce parallel code generation units
+opt-level = "z"   # Optimize for size
+lto = true        # Enable link-time optimization
+strip = true      # Strip symbols from binary
+panic = "abort"   # Abort on panic instead of unwinding
+codegen-units = 1 # Reduce parallel code generation units
 
 [target.x86_64-unknown-linux-musl]
 linker = "x86_64-linux-musl-gcc"

@@ -1,4 +1,4 @@
-use crate::webserver::models::sysmodels::{GenericSysInfoResponse, IpInfo, MACInfo};
+use teus_types::api_models::{GenericSysInfoResponse, IpInfo, MACInfo};
 use actix_web::{get, HttpResponse, Responder};
 use sysinfo::{Networks, System};
 

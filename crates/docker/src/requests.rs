@@ -124,7 +124,6 @@ impl TeusRequestBuilder {
             lines.collect::<String>()
         } else {
             println!("--> Detected Content-Length response. Body is raw JSON.");
-            // If not chunked, the body is already the complete JSON. No processing needed.
             body_part.to_string()
         }
     }
@@ -168,9 +167,15 @@ impl TeusRequestBuilder {
 mod tests {
     use super::*;
 
+    #[cfg(not(target_os = "macos"))]
+    const _SOCK_SRC: &str = "/var/run/docker.sock";
+
+    #[cfg(target_os = "macos")]
+    const _SOCK_SRC: &str = "/Users/homeerr/.colima/default/docker.sock";
+
     // Helper function to avoid repeating setup code
     fn _setup_builder() -> TeusRequestBuilder {
-        let socket = "/Users/homeerr/.colima/default/docker.sock".to_string();
+        let socket = _SOCK_SRC.to_string();
         let host = "localhost".to_string();
         TeusRequestBuilder::new(socket, host).unwrap()
     }

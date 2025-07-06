@@ -7,9 +7,10 @@ use crate::webserver::docker::handlers::{
     get_docker_container, get_docker_containers, get_docker_version, get_docker_volume,
     get_docker_volumes,
 };
-use crate::webserver::models::sysmodels::{DiskInfoResponse, SysInfoResponse};
 use crate::webserver::services::systeminfo;
-use crate::{config::types::Config, monitor::storage::Storage};
+use crate::monitor::storage::Storage;
+use teus_types::api_models::{DiskInfoResponse, SysInfoResponse};
+use teus_types::config::Config;
 use actix_cors::Cors;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{get, http, middleware, web, App, Error, HttpResponse, HttpServer};

@@ -1274,15 +1274,14 @@ impl DockerClient {
     where
         T: for<'de> Deserialize<'de>,
     {
-        // First, try to deserialize as the expected type
+        /* T deserialization */
         match serde_json::from_str::<T>(response) {
             Ok(data) => Ok(data),
             Err(_) => {
-                // If that fails, try to deserialize as a Docker error response
                 match serde_json::from_str::<DockerErrorResponse>(response) {
                     Ok(error_response) => Err(DockerError::Generic(error_response.message)),
                     Err(_) => {
-                        // If both fail, return the raw response as a generic error
+                        /* if both fail, return the raw response as a generic error */
                         Err(DockerError::Generic(format!(
                             "Failed to parse Docker response: {}",
                             response
@@ -1398,6 +1397,7 @@ mod tests {
     }
 
     #[test]
+    /* this test is not good for everyone */
     fn test_get_volume_details() {
         // Our test now calls the correct helper function automatically.
         let test_socket = get_test_socket_path();

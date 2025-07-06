@@ -1,4 +1,4 @@
-use crate::config::types::Config;
+use teus_types::config::Config;
 use std::error::Error;
 use std::{fs, path::Path};
 

@@ -1,8 +1,9 @@
 use crate::{
-    config::{schema::TeusConfig, types::Config},
+    config::schema::TeusConfig,
     monitor::storage::Storage,
     webserver::auth::{middleware::Claims, schema::User},
 };
+use teus_types::config::Config;
 use actix_web::{post, web, HttpResponse, Responder};
 use argon2::{
     password_hash::{PasswordHash, PasswordVerifier},

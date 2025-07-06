@@ -1,10 +1,8 @@
 use crate::{
-    config::{
-        schema,
-        types::{Config, IsFirstVisitResponse},
-    },
+    config::{schema},
     monitor::storage::Storage,
 };
+use teus_types::config::{Config, IsFirstVisitResponse};
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{get, web, Error, HttpResponse};
 
