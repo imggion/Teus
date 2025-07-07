@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use actix_web::{get, web, HttpResponse, Responder};
+use actix_web::{HttpResponse, Responder, get, web};
 use docker::docker::DockerClient;
 use serde::{Deserialize, Serialize};
 use serde_qs::to_string;

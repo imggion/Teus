@@ -1,6 +1,6 @@
-use teus_types::config::Config;
 use std::error::Error;
 use std::{fs, path::Path};
+use teus_types::config::Config;
 
 #[allow(dead_code)]
 type GeneralError = Box<dyn Error>;

@@ -1,6 +1,6 @@
-use teus_types::api_models::{GenericSysInfoResponse, IpInfo, MACInfo};
-use actix_web::{get, HttpResponse, Responder};
+use actix_web::{HttpResponse, Responder, get};
 use sysinfo::{Networks, System};
+use teus_types::api_models::{GenericSysInfoResponse, IpInfo, MACInfo};
 
 /* TODO: Migrate those services into teus-services crate */
 fn collect_network_info() -> Vec<IpInfo> {

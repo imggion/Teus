@@ -1,6 +1,6 @@
 use super::schema::User;
-use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::SaltString;
+use argon2::password_hash::rand_core::OsRng;
 use argon2::{Argon2, PasswordHasher};
 use diesel::result::Error;
 use diesel::{RunQueryDsl, SqliteConnection};

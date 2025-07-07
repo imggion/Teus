@@ -5,9 +5,9 @@
 //! both insertable structures for writing new data and queryable
 //! structures for reading existing data.
 
-use teus_schema::schema::{diskinfo, sysinfo};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use teus_schema::schema::{diskinfo, sysinfo};
 
 /// Structure for inserting system information records into the database.
 ///

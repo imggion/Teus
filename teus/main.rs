@@ -1,7 +1,3 @@
-use teus_config::config;
-use teus_database::storage;
-use teus_api::routes;
-use teus_monitor::sys::SysInfo;
 use std::{
     env,
     path::Path,
@@ -12,6 +8,10 @@ use std::{
     },
     thread,
 };
+use teus_api::routes;
+use teus_config::config;
+use teus_database::storage;
+use teus_monitor::sys::SysInfo;
 
 fn main() {
     println!("Starting Teus service...");

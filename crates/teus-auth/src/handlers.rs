@@ -1,16 +1,16 @@
-use teus_database::storage::Storage;
 use crate::middleware::Claims;
 use crate::schema::User;
-use teus_config::config::schema::TeusConfig;
-use teus_types::config::Config;
-use actix_web::{post, web, HttpResponse, Responder};
+use actix_web::{HttpResponse, Responder, post, web};
 use argon2::{
-    password_hash::{PasswordHash, PasswordVerifier},
     Argon2,
+    password_hash::{PasswordHash, PasswordVerifier},
 };
 use chrono::{Duration, Utc};
-use jsonwebtoken::{encode, EncodingKey, Header};
+use jsonwebtoken::{EncodingKey, Header, encode};
 use serde::{Deserialize, Serialize};
+use teus_config::config::schema::TeusConfig;
+use teus_database::storage::Storage;
+use teus_types::config::Config;
 
 /// Request structure for user authentication login endpoint.
 ///
