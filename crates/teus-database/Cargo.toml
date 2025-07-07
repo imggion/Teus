@@ -1,0 +1,11 @@
+[package]
+name = "teus-database"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+teus-types = { path = "../teus-types" }
+diesel = { version = "2.2.0", features = ["sqlite", "returning_clauses_for_sqlite_3_35"] }
+
+[dev-dependencies]
+tempfile = "3.8"
