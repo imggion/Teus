@@ -1,0 +1,16 @@
+[package]
+name = "teus-api"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+teus-types = { path = "../teus-types" }
+teus-auth = { path = "../teus-auth" }
+teus-monitor = { path = "../teus-monitor" }
+teus-docker = { path = "../teus-docker" }
+teus-database = { path = "../teus-database"}
+teus-config = { path = "../teus-config"}
+teus-services = { path = "../teus-services" }
+actix-web = "4.9"
+actix-cors = "0.7"
+sysinfo = "0.33.1"
