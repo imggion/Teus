@@ -1,18 +1,43 @@
 [workspace]
-# This file is part of the Teus project.
 members = [
+    ".",
     "crates/teus-types",
-    "crates/docker",
     "crates/teus-config",
-    "crates/teus-schema",
     "crates/teus-database",
     "crates/teus-monitor",
     "crates/teus-auth",
-    "crates/teus-docker",
     "crates/teus-api",
     "crates/teus-services",
+    "crates/teus-docker",
+    "crates/sysd",
 ]
 default-members = ["."]
+
+[workspace.dependencies]
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+chrono = { version = "0.4", features = ["serde"] }
+diesel = { version = "2.2.0", features = [
+    "sqlite",
+    "returning_clauses_for_sqlite_3_35",
+] }
+actix-web = "4.9"
+
+[dependencies]
+teus-types = { path = "crates/teus-types" }
+teus-config = { path = "crates/teus-config" }
+teus-database = { path = "crates/teus-database" }
+teus-monitor = { path = "crates/teus-monitor" }
+teus-auth = { path = "crates/teus-auth" }
+teus-api = { path = "crates/teus-api" }
+teus-services = { path = "crates/teus-services" }
+teus-docker = { path = "crates/teus-docker" }
+tokio = { version = "1", features = ["full"] }
+ctrlc = "3.4"
+
+[dev-dependencies]
+tempfile = "3.8"
+tokio-test = "0.4"
 
 [package]
 name = "teus"
@@ -27,36 +52,6 @@ path = "teus/lib.rs"
 [[bin]]
 name = "teus"
 path = "./teus/main.rs"
-
-[dependencies] # we need to clean something here
-docker = { path = "crates/docker" }
-teus-types = { path = "crates/teus-types" }
-teus-config = { path = "crates/teus-config" }
-teus-database = { path = "crates/teus-database" }
-teus-api = { path = "crates/teus-api" }
-teus-monitor = { path = "crates/teus-monitor" }
-diesel = { version = "2.2.0", features = [
-    "sqlite",
-    "returning_clauses_for_sqlite_3_35",
-] }
-dotenvy = "0.15"
-actix-cors = "0.7.0"
-actix-web = "4.9.0"
-chrono = "0.4.40"
-ctrlc = "3.4.5"
-derive_more = { version = "2.0.1", features = ["display", "error", "from"] }
-jsonwebtoken = "9.3.1"
-rusqlite = "0.34.0"
-serde = { version = "1.0.218", features = ["derive"] }
-serde_json = "1.0"
-serde_qs = "0.13"
-sysinfo = "0.33.1"
-toml = "0.8.20"
-argon2 = "0.5.3"
-
-[dev-dependencies]
-tempfile = "3.8"
-tokio-test = "0.4"
 
 [profile.release]
 opt-level = "z"   # Optimize for size
