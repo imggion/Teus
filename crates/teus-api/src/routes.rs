@@ -1,10 +1,13 @@
 /* REMOVE SERVICES FROM THIS CRATE */
 /* THIS CRATE IS ONLY FOR HANDLE THE ACTIX WEBSERVICE */
 
+use std::sync::Mutex;
+
 use crate::handlers::systeminfo;
 use actix_cors::Cors;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{App, Error, HttpResponse, HttpServer, get, http, middleware, web};
+use docker::docker::DockerClient;
 use teus_auth::handlers::{JwtConfig, check, login, signup};
 use teus_auth::middleware::AuthMiddlewareFactory;
 use teus_config::config::handlers::get_teus_config;
@@ -17,6 +20,9 @@ use teus_monitor::query;
 use teus_services::bookmarks::handlers as bookmark_handlers;
 use teus_types::api_models::{DiskInfoResponse, SysInfoResponse};
 use teus_types::config::Config;
+
+pub type DockerState = web::Data<Mutex<Option<DockerClient>>>;
+
 
 // TODO: move this api into another file `syshandler` or something
 #[get("/sysinfo")]
@@ -68,6 +74,9 @@ pub async fn start_webserver(config: &Config, storage: Storage) -> std::io::Resu
     let app_config_data = web::Data::new(config.clone());
     let app_storage_data = web::Data::new(storage.clone()); // Clone for app_data
 
+    /* to avoid re-initialize the client at every api request */
+    let docker_state = web::Data::new(Mutex::new(None::<DockerClient>));
+
     // TODO: Put the secret here from the config
     let jwt_secret = config.server.secret.clone();
     let jwt_config = web::Data::new(JwtConfig {
@@ -89,6 +98,7 @@ pub async fn start_webserver(config: &Config, storage: Storage) -> std::io::Resu
             .app_data(app_config_data.clone()) // Share config
             .app_data(app_storage_data.clone()) // Share storage
             .app_data(jwt_config.clone()) // Share JWT config
+            .app_data(docker_state.clone())
             // Public routes
             .service(
                 web::scope("/api/v1/auth")

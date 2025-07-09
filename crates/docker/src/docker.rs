@@ -1257,15 +1257,17 @@ impl DockerClient {
     ///
     /// If `socket_path` is `None`, it defaults to the standard Unix socket path
     /// "/var/run/docker.sock".
-    pub fn new(socket_path: Option<String>) -> Self {
+    pub fn new(socket_path: Option<String>) -> Result<Self, DockerError> {
         // If socket_path is Some(path), use it.
         // If socket_path is None, execute the closure to get the default path.
         let path = socket_path.unwrap_or_else(|| DOCKER_SOCK.to_string());
 
-        DockerClient {
-            // We now pass the guaranteed-to-be-valid path to the builder
-            request_builder: TeusRequestBuilder::new(path, "localhost".to_string())
-                .expect("Are you sure docker is up and running?"),
+        match TeusRequestBuilder::new(path, "localhost".to_string()) {
+            Ok(request_builder) => {
+                let client = DockerClient { request_builder };
+                Ok(client)
+            }
+            Err(_) => Err(DockerError::Generic("Error accessing Docker".to_string())),
         }
     }
 
@@ -1337,6 +1339,19 @@ impl DockerClient {
     }
 }
 
+/* this custom clone is needed because the docker client contains an UnixStream that is unique for safety purposes */
+impl Clone for DockerClient {
+    fn clone(&self) -> Self {
+        let socket_path = self.request_builder.socket.clone();
+        let host = self.request_builder.host.clone();
+
+        match TeusRequestBuilder::new(socket_path, host) {
+            Ok(request_builder) => DockerClient { request_builder },
+            Err(_) => panic!("Failed to clone DockerClient: could not establish new connection"),
+        }
+    }
+}
+
 mod tests {
     #[allow(unused_imports)]
     use super::*;
@@ -1364,7 +1379,7 @@ mod tests {
     fn test_get_containers() {
         // Our test now calls the correct helper function automatically.
         let test_socket = get_test_socket_path();
-        let mut client = DockerClient::new(test_socket);
+        let mut client = DockerClient::new(test_socket).unwrap();
         println!("{:?}", client);
 
         let containers = client.get_containers(None).unwrap();
@@ -1376,7 +1391,7 @@ mod tests {
     fn test_get_version() {
         // Our test now calls the correct helper function automatically.
         let test_socket = get_test_socket_path();
-        let mut client = DockerClient::new(test_socket);
+        let mut client = DockerClient::new(test_socket).unwrap();
         println!("{:?}", client);
 
         let version = client.get_version().unwrap();
@@ -1388,7 +1403,7 @@ mod tests {
     fn test_get_volumes() {
         // Our test now calls the correct helper function automatically.
         let test_socket = get_test_socket_path();
-        let mut client = DockerClient::new(test_socket);
+        let mut client = DockerClient::new(test_socket).unwrap();
         println!("{:?}", client);
 
         let volumes = client.get_volumes().unwrap();
@@ -1401,7 +1416,7 @@ mod tests {
     fn test_get_volume_details() {
         // Our test now calls the correct helper function automatically.
         let test_socket = get_test_socket_path();
-        let mut client = DockerClient::new(test_socket);
+        let mut client = DockerClient::new(test_socket).unwrap();
         println!("{:?}", client);
 
         let volume_name =
