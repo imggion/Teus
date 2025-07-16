@@ -13,5 +13,4 @@
 ## Future Ideas
 - [ ] Alerts and notifications
 - [ ] Historical data visualization
-- [ ] Multi-system support
 
