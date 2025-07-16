@@ -2,6 +2,19 @@
 
 [![Rust Teus CI](https://github.com/imggion/Teus/actions/workflows/rust.yml/badge.svg)](https://github.com/imggion/Teus/actions/workflows/rust.yml)
 
+## ⚠️ Important Disclaimer
+
+**This software is currently under active development and is NOT ready for production use.** 
+
+Please be aware that:
+- The codebase is subject to frequent changes and breaking updates
+- Features may be incomplete or unstable
+- Database schemas and APIs may change without notice
+- Security features may not be fully implemented or tested
+- No guarantees are provided regarding data integrity or system stability
+- Refactoring needed
+
+
 Teus is a lightweight system monitoring service written in Rust that collects and exposes system metrics through a REST API.
 
 ## Features
