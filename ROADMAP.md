@@ -8,7 +8,7 @@
 
 ## Upcoming
 - [ ] Improve error handling
-- [ ] Services monitoring (Systemd and docker containers)
+- [ ] Services monitoring (Systemd)
 
 ## Future Ideas
 - [ ] Alerts and notifications
