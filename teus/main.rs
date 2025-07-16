@@ -1,6 +1,3 @@
-use teus::{config, monitor, webserver};
-
-use monitor::sys::SysInfo;
 use std::{
     env,
     path::Path,
@@ -11,6 +8,10 @@ use std::{
     },
     thread,
 };
+use teus_api::routes;
+use teus_config::config;
+use teus_database::storage;
+use teus_monitor::sys::SysInfo;
 
 fn main() {
     println!("Starting Teus service...");
@@ -37,7 +38,7 @@ fn main() {
     };
 
     // Initialize Storage once
-    let storage = match monitor::storage::Storage::new(&config.database.path) {
+    let storage = match storage::Storage::new(&config.database.path) {
         Ok(s) => s,
         Err(e) => {
             eprintln!("Failed to initialize storage: {}", e);
@@ -59,8 +60,8 @@ fn main() {
     let config_clone_for_web = config.clone(); // Clone config for webserver
     let storage_clone_for_web = storage.clone(); // Clone storage for webserver
     let web_handle_thread = thread::spawn(move || {
-        // This will run the webserver in a separate thread
-        let _ = webserver::api::start_webserver(&config_clone_for_web, storage_clone_for_web);
+        /* TODO: consider a RC instead to avoid cloning */
+        let _ = routes::start_webserver(&config_clone_for_web, storage_clone_for_web);
     });
 
     // Give the webserver a moment to start

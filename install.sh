@@ -78,7 +78,20 @@ echo -e "========================================${NC}"
 # Check for sudo privileges
 if [[ $EUID -ne 0 && "$(id -u)" -ne 0 ]]; then
     if ! command -v sudo >/dev/null 2>&1; then
-        error "This script requires sudo privileges. Please run as root or install sudo."
+        error "This script requires sudo privileges."
+    fi
+fi
+
+# Check if the user teus is inside docker group
+if ! id -nG teus | grep -qw "docker"; then
+    warning "The user 'teus' is not in the 'docker' group. Please add the user to the docker group and try again."
+    read -rp "Do you want to add the user 'teus' to the docker group? [Y/n] " add_to_docker_group
+    add_to_docker_group=${add_to_docker_group:-Y}
+    if [[ $add_to_docker_group =~ ^[Yy]$ ]]; then
+        sudo usermod -aG docker teus
+        success "User 'teus' added to docker group."
+    else
+        error "User 'teus' is not in the docker group. Please add the user to the docker group and try again."
     fi
 fi
 
@@ -173,6 +186,10 @@ if ! command -v diesel >/dev/null 2>&1; then
         if cargo install diesel_cli --no-default-features --features sqlite; then
             success "Diesel CLI installed successfully."
         else
+            # fallback installer to ensure diesel installation
+            if curl --proto '=https' --tlsv1.2 -LsSf https://github.com/diesel-rs/diesel/releases/latest/download/diesel_cli-installer.sh | sh; then
+                success "Diesel CLI installed successfully. "
+            fi
             error "Failed to install Diesel CLI. Please install it manually with: cargo install diesel_cli --no-default-features --features sqlite"
         fi
     else

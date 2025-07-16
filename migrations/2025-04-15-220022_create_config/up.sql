@@ -5,4 +5,4 @@ CREATE TABLE config (
     first_visit BOOLEAN NOT NULL DEFAULT 1
 );
 
-INSERT INTO config (first_visit) VALUES (0);
+INSERT INTO config (first_visit) VALUES (1);

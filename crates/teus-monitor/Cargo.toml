@@ -1,0 +1,19 @@
+[package]
+name = "teus-monitor"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+teus-types = { path = "../teus-types" }
+teus-database = { path = "../teus-database" }
+teus-schema = { path = "../teus-schema"}
+sysinfo = "0.33"
+chrono = { version = "0.4", features = ["serde"] }
+diesel = { version = "2.2.0", features = [
+    "sqlite",
+    "returning_clauses_for_sqlite_3_35",
+] }
+serde = { version = "1.0.218", features = ["derive"] }
+
+[dev-dependencies]
+serde_json = "1.0"

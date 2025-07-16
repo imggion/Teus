@@ -1,0 +1,19 @@
+[package]
+name = "teus-auth"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+teus-types = { path = "../teus-types" }
+teus-database = { path = "../teus-database" }
+teus-config = { path = "../teus-config" }
+teus-schema = { path = "../teus-schema" }
+actix-web = "4.9"
+jsonwebtoken = "9.3"
+argon2 = "0.5"
+chrono = { version = "0.4", features = ["serde"] }
+serde = { version = "1.0.218", features = ["derive"] }
+diesel = { version = "2.2.0", features = [
+    "sqlite",
+    "returning_clauses_for_sqlite_3_35",
+] }
