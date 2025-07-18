@@ -23,7 +23,6 @@ use teus_types::config::Config;
 
 pub type DockerState = web::Data<Mutex<Option<DockerClient>>>;
 
-
 // TODO: move this api into another file `syshandler` or something
 #[get("/sysinfo")]
 async fn sysinfo_handler(storage: web::Data<Storage>) -> Result<HttpResponse, Error> {

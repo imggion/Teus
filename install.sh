@@ -226,8 +226,8 @@ if [ ! -f "${SERVICE_FILE}" ]; then
 fi
 
 # Ask about web dashboard installation
-read -rp "Do you want to install the web dashboard? [Y/n] " install_dashboard
-install_dashboard=${install_dashboard:-Y}
+# read -rp "Do you want to install the web dashboard? [Y/n] " install_dashboard
+# install_dashboard=${install_dashboard:-Y}
 
 info "Building the Rust project in release mode..."
 if ! cargo build --release; then
