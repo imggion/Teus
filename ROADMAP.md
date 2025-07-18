@@ -21,4 +21,19 @@ This document outlines the planned development tasks and improvements for Teus.
 ---
 
 *This roadmap is subject to change as the project develops and new priorities emerge.*
+# Teus System Monitor - Roadmap
+
+## Current Features
+- System monitoring (CPU, RAM, Swap)
+- Disk information collection
+- Database storage
+- REST API
+
+## Upcoming
+- [ ] Improve error handling
+- [ ] Services monitoring (Systemd)
+
+## Future Ideas
+- [ ] Alerts and notifications
+- [ ] Historical data visualization
 
