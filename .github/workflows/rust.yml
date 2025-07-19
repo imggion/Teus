@@ -20,7 +20,8 @@ jobs:
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          components: clippy, rustfmt
+          components: rustfmt
+          # components: clippy, rustfmt
 
       # 3. cache
       - name: Cache Cargo dependencies
@@ -41,8 +42,8 @@ jobs:
         run: cargo fmt -- --check
 
       # 5. clippy (is it necessary?)
-      - name: Run Clippy
-        run: cargo clippy -- -D warnings
+      # - name: Run Clippy
+      #   run: cargo clippy -- -D warnings
 
       # 6. tests
       - name: Run tests

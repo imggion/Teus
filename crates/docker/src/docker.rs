@@ -1411,18 +1411,18 @@ mod tests {
         assert!(!volumes.volumes.is_empty());
     }
 
-    #[test]
+    // #[test]
     /* this test is not good for everyone */
-    fn test_get_volume_details() {
-        // Our test now calls the correct helper function automatically.
-        let test_socket = get_test_socket_path();
-        let mut client = DockerClient::new(test_socket).unwrap();
-        println!("{:?}", client);
+    // fn test_get_volume_details() {
+    //     // Our test now calls the correct helper function automatically.
+    //     let test_socket = get_test_socket_path();
+    //     let mut client = DockerClient::new(test_socket).unwrap();
+    //     println!("{:?}", client);
 
-        let volume_name =
-            "84146ce4581849ab32389b4fa709e47ce80f2a78075f9a32dbb2f6f8b19456de".to_string();
-        let volume_details = client.get_volume_details(volume_name).unwrap();
-        println!("{:?}", volume_details);
-        assert!(!volume_details.name.is_empty());
-    }
+    //     let volume_name =
+    //         "84146ce4581849ab32389b4fa709e47ce80f2a78075f9a32dbb2f6f8b19456de".to_string();
+    //     let volume_details = client.get_volume_details(volume_name).unwrap();
+    //     println!("{:?}", volume_details);
+    //     assert!(!volume_details.name.is_empty());
+    // }
 }

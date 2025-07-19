@@ -159,8 +159,7 @@ impl TeusRequestBuilder {
             return "Error: Failed to read response".to_string();
         }
 
-        let response = self.parse_buffer_to_string(response_buffer);
-        response
+         self.parse_buffer_to_string(response_buffer)
     }
 }
 
